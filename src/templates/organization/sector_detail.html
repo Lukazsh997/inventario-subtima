@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% load ui %}
+{% block title %}{{ sector.name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="small text-secondary"><a href="{% url 'organization:sector_list' %}">Setores</a>{% if sector.parent %} › {{ sector.path }}{% endif %}</div>
+    <h1>{{ sector.name }}{% if sector.acronym %} <span class="text-secondary fw-normal">({{ sector.acronym }})</span>{% endif %}
+      {% if not sector.active %}<span class="badge text-bg-secondary fs-6 align-middle">inativo</span>{% endif %}</h1>
+  </div>
+  {% if "sectors.manage" in caps %}
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-primary" href="{% url 'organization:sector_update' sector.pk %}"><i class="bi bi-pencil"></i> Editar</a>
+    <form method="post" action="{% url 'organization:sector_toggle_active' sector.pk %}"
+          data-confirm="{% if sector.active %}Desativar o setor {{ sector.name }}? Ele deixará de aparecer nas listas de seleção, mas o histórico é mantido.{% else %}Reativar o setor {{ sector.name }}?{% endif %}"
+          {% if sector.active %}data-confirm-style="danger"{% endif %}>
+      {% csrf_token %}
+      <button class="btn {% if sector.active %}btn-outline-danger{% else %}btn-outline-success{% endif %}" type="submit">{% if sector.active %}Desativar{% else %}Reativar{% endif %}</button>
+    </form>
+  </div>
+  {% endif %}
+</div>
+
+<div class="row g-3">
+  <div class="col-12 col-xl-6">
+    <div class="card h-100">
+      <div class="card-header bg-white fw-semibold">Locais físicos</div>
+      <ul class="list-group list-group-flush">
+        {% for loc in locations %}
+        <li class="list-group-item d-flex justify-content-between align-items-center {% if not loc.active %}text-secondary{% endif %}">
+          <span>{{ loc.name }}{% if not loc.active %} <span class="badge text-bg-secondary">inativo</span>{% endif %}</span>
+          {% if "sectors.manage" in caps %}
+          <form method="post" action="{% url 'organization:location_toggle_active' loc.pk %}">{% csrf_token %}
+            <button class="btn btn-sm btn-link" type="submit">{% if loc.active %}Desativar{% else %}Reativar{% endif %}</button>
+          </form>
+          {% endif %}
+        </li>
+        {% empty %}
+        <li class="list-group-item text-secondary">Nenhum local cadastrado.</li>
+        {% endfor %}
+      </ul>
+      {% if location_form %}
+      <div class="card-body border-top">
+        <form method="post" class="d-flex gap-2 align-items-start" novalidate>
+          {% csrf_token %}
+          <div class="flex-grow-1">
+            {{ location_form.name|add_class:"form-control" }}
+            {% for error in location_form.name.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+            {% for error in location_form.non_field_errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+          </div>
+          <button class="btn btn-outline-primary text-nowrap" type="submit"><i class="bi bi-plus-lg"></i> Adicionar</button>
+        </form>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  <div class="col-12 col-xl-6">
+    <div class="card h-100">
+      <div class="card-header bg-white fw-semibold d-flex justify-content-between align-items-center">
+        Servidores ativos
+        {% if "recipients.manage" in caps and sector.active %}<a class="btn btn-sm btn-outline-primary" href="{% url 'organization:recipient_create' %}?setor={{ sector.pk }}"><i class="bi bi-plus-lg"></i> Novo servidor</a>{% endif %}
+      </div>
+      <ul class="list-group list-group-flush">
+        {% for r in recipients %}
+        <li class="list-group-item">{{ r.full_name }}<span class="text-secondary small">{% if r.registration %} · mat. {{ r.registration }}{% endif %}{% if r.job_title %} · {{ r.job_title }}{% endif %}</span></li>
+        {% empty %}
+        <li class="list-group-item text-secondary">Nenhum servidor cadastrado neste setor.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  {% if children %}
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header bg-white fw-semibold">Setores vinculados</div>
+      <ul class="list-group list-group-flush">
+        {% for c in children %}
+        <li class="list-group-item"><a href="{% url 'organization:sector_detail' c.pk %}">{{ c }}</a>{% if not c.active %} <span class="badge text-bg-secondary">inativo</span>{% endif %}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

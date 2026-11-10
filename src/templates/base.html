@@ -1,0 +1,77 @@
+{% load static ui %}<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Início{% endblock %} · Patrimônio TI</title>
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap-icons/bootstrap-icons.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body class="app-body" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+{% block layout %}
+<header class="navbar app-topbar d-lg-none px-3">
+  <button class="btn btn-link text-white p-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="sidebar" aria-label="Abrir menu">
+    <i class="bi bi-list fs-3"></i>
+  </button>
+  <span class="text-white fw-semibold">Patrimônio TI</span>
+  <span style="width:1.5rem"></span>
+</header>
+
+<div class="d-flex">
+  <nav id="sidebar" class="offcanvas-lg offcanvas-start app-sidebar" tabindex="-1" aria-label="Menu principal">
+    <div class="offcanvas-header d-lg-none">
+      <span class="text-white fw-semibold">Menu</span>
+      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" data-bs-target="#sidebar" aria-label="Fechar"></button>
+    </div>
+    <div class="offcanvas-body d-flex flex-column p-0 w-100">
+      <div class="app-brand px-3 py-3">
+        <div class="fw-semibold">Patrimônio TI</div>
+        <div class="small opacity-75">{{ ORG_UNIT_NAME }}</div>
+      </div>
+      <ul class="nav flex-column px-2 flex-grow-1">
+        <li class="nav-item"><a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{% url 'core:home' %}"><i class="bi bi-house"></i> Início</a></li>
+        {% if "org.view" in caps %}
+        <li class="app-nav-section">Organização</li>
+        <li class="nav-item"><a class="nav-link {% active_if '/organizacao/setores' %}" href="{% url 'organization:sector_list' %}"><i class="bi bi-diagram-3"></i> Setores</a></li>
+        <li class="nav-item"><a class="nav-link {% active_if '/organizacao/servidores' %}" href="{% url 'organization:recipient_list' %}"><i class="bi bi-person-vcard"></i> Servidores</a></li>
+        {% endif %}
+        {% if "users.manage" in caps or "audit.view" in caps %}
+        <li class="app-nav-section">Administração</li>
+        {% if "users.manage" in caps %}
+        <li class="nav-item"><a class="nav-link {% active_if '/contas/usuarios' %}" href="{% url 'accounts:user_list' %}"><i class="bi bi-people"></i> Usuários</a></li>
+        {% endif %}
+        {% if "audit.view" in caps %}
+        <li class="nav-item"><a class="nav-link {% active_if '/auditoria' %}" href="{% url 'audit:list' %}"><i class="bi bi-journal-text"></i> Auditoria</a></li>
+        {% endif %}
+        {% endif %}
+      </ul>
+      <div class="app-user px-3 py-3">
+        <div class="small fw-semibold text-truncate">{{ request.user.full_name }}</div>
+        <div class="small opacity-75 mb-2">{{ request.user.get_role_display }}</div>
+        <div class="d-flex gap-2">
+          <a class="btn btn-sm btn-outline-light" href="{% url 'accounts:password_change' %}"><i class="bi bi-key"></i> Senha</a>
+          <form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}
+            <button class="btn btn-sm btn-outline-light" type="submit"><i class="bi bi-box-arrow-right"></i> Sair</button>
+          </form>
+        </div>
+        <div class="small opacity-50 mt-2">versão {{ APP_VERSION }}</div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="app-main flex-grow-1">
+    <div class="container-fluid py-4 px-3 px-lg-4">
+      {% include "components/messages.html" %}
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+</div>
+{% include "components/confirm_modal.html" %}
+{% endblock %}
+<script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'vendor/htmx/htmx.min.js' %}"></script>
+<script defer src="{% static 'vendor/alpine/alpine.min.js' %}"></script>
+<script src="{% static 'js/app.js' %}"></script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Usuários{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Usuários do sistema</h1>
+  <a class="btn btn-primary" href="{% url 'accounts:user_create' %}"><i class="bi bi-plus-lg"></i> Novo usuário</a>
+</div>
+<form class="row g-2 mb-3" method="get">
+  <div class="col-12 col-md-5"><input class="form-control" type="search" name="q" value="{{ request.GET.q }}" placeholder="Buscar por nome, login ou e-mail" aria-label="Buscar"></div>
+  <div class="col-6 col-md-3">
+    <select name="perfil" class="form-select" aria-label="Perfil" onchange="this.form.submit()">
+      <option value="">Todos os perfis</option>
+      {% for value, label in roles %}<option value="{{ value }}" {% if request.GET.perfil == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-6 col-md-2">{% include "components/status_filter.html" %}</div>
+  <div class="col-12 col-md-2"><button class="btn btn-outline-secondary w-100" type="submit"><i class="bi bi-search"></i> Buscar</button></div>
+</form>
+<div class="table-responsive">
+<table class="table table-app table-hover border rounded mb-0">
+  <thead><tr><th>Nome</th><th>Login</th><th>Perfil</th><th class="d-none d-md-table-cell">Setor</th><th class="d-none d-md-table-cell">Último acesso</th><th class="text-end">Ações</th></tr></thead>
+  <tbody>
+  {% for u in page %}
+    <tr class="{% if not u.is_active %}row-inactive{% endif %}">
+      <td>{{ u.full_name }}{% if not u.is_active %} <span class="badge text-bg-secondary">inativo</span>{% endif %}{% if u.is_locked %} <span class="badge text-bg-warning">bloqueado</span>{% endif %}</td>
+      <td>{{ u.username }}</td>
+      <td>{{ u.get_role_display }}</td>
+      <td class="d-none d-md-table-cell">{{ u.sector|default:"—" }}</td>
+      <td class="d-none d-md-table-cell">{{ u.last_login|date:"d/m/Y H:i"|default:"nunca" }}</td>
+      <td class="text-end text-nowrap">
+        <a class="btn btn-sm btn-outline-primary" href="{% url 'accounts:user_update' u.pk %}" title="Editar"><i class="bi bi-pencil"></i><span class="visually-hidden">Editar</span></a>
+        <a class="btn btn-sm btn-outline-secondary" href="{% url 'accounts:user_reset_password' u.pk %}" title="Redefinir senha"><i class="bi bi-key"></i><span class="visually-hidden">Redefinir senha</span></a>
+        {% if u.pk != request.user.pk %}
+        <form class="d-inline" method="post" action="{% url 'accounts:user_toggle_active' u.pk %}"
+              data-confirm="{% if u.is_active %}Desativar a conta de {{ u.full_name }}? A pessoa não conseguirá mais entrar no sistema.{% else %}Reativar a conta de {{ u.full_name }}?{% endif %}"
+              {% if u.is_active %}data-confirm-style="danger"{% endif %}>
+          {% csrf_token %}
+          <button class="btn btn-sm {% if u.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %}" type="submit" title="{% if u.is_active %}Desativar{% else %}Reativar{% endif %}">
+            <i class="bi {% if u.is_active %}bi-person-slash{% else %}bi-person-check{% endif %}"></i><span class="visually-hidden">{% if u.is_active %}Desativar{% else %}Reativar{% endif %}</span>
+          </button>
+        </form>
+        {% endif %}
+      </td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="6" class="text-center text-secondary py-4">Nenhum usuário encontrado.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% include "components/pagination.html" %}
+{% endblock %}

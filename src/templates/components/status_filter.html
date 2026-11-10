@@ -1,0 +1,5 @@
+<select name="status" class="form-select" aria-label="Situação" onchange="this.form.submit()">
+  <option value="ativos" {% if status == "ativos" %}selected{% endif %}>Ativos</option>
+  <option value="inativos" {% if status == "inativos" %}selected{% endif %}>Inativos</option>
+  <option value="todos" {% if status == "todos" %}selected{% endif %}>Todos</option>
+</select>

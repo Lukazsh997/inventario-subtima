@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Não encontrado{% endblock %}
+{% block layout %}
+<div class="login-wrap">
+  <div class="card login-card"><div class="card-body p-4 text-center">
+    <h1 class="h4">Página não encontrada</h1>
+    <p class="text-secondary">O endereço acessado não existe ou o registro foi removido.</p>
+    <a class="btn btn-primary" href="{% url 'core:home' %}">Voltar ao início</a>
+  </div></div>
+</div>
+{% endblock %}

@@ -1,0 +1,26 @@
+[project]
+name = "patrimonio-ti"
+version = "0.1.0"
+description = "Sistema de gerenciamento de patrimônio e estoque de TI"
+requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings"
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+python_files = ["test_*.py"]
+filterwarnings = ["ignore:No directory at:UserWarning"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+src = ["src", "tests"]
+extend-exclude = ["src/apps/*/migrations"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "DJ", "S", "BLE"]
+ignore = ["S101", "S105", "S106", "DJ001"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S"]

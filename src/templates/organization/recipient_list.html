@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Servidores{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Servidores</h1>
+  {% if "recipients.manage" in caps %}<a class="btn btn-primary" href="{% url 'organization:recipient_create' %}"><i class="bi bi-plus-lg"></i> Novo servidor</a>{% endif %}
+</div>
+<form class="row g-2 mb-3" method="get">
+  <div class="col-12 col-md-5"><input class="form-control" type="search" name="q" value="{{ request.GET.q }}" placeholder="Buscar por nome, matrícula, cargo ou setor" aria-label="Buscar"></div>
+  <div class="col-12 col-md-3">
+    <select name="setor" class="form-select" aria-label="Setor" onchange="this.form.submit()">
+      <option value="">Todos os setores</option>
+      {% for s in sectors %}<option value="{{ s.pk }}" {% if selected_sector == s.pk|stringformat:"d" %}selected{% endif %}>{{ s }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-6 col-md-2">{% include "components/status_filter.html" %}</div>
+  <div class="col-6 col-md-2"><button class="btn btn-outline-secondary w-100" type="submit"><i class="bi bi-search"></i> Buscar</button></div>
+</form>
+<div class="table-responsive">
+<table class="table table-app table-hover border rounded mb-0">
+  <thead><tr><th>Nome</th><th>Matrícula</th><th class="d-none d-md-table-cell">Cargo</th><th>Setor</th>{% if "recipients.manage" in caps %}<th class="text-end">Ações</th>{% endif %}</tr></thead>
+  <tbody>
+  {% for r in page %}
+    <tr class="{% if not r.active %}row-inactive{% endif %}">
+      <td>{{ r.full_name }}{% if not r.active %} <span class="badge text-bg-secondary">inativo</span>{% endif %}</td>
+      <td>{{ r.registration|default:"—" }}</td>
+      <td class="d-none d-md-table-cell">{{ r.job_title|default:"—" }}</td>
+      <td><a href="{% url 'organization:sector_detail' r.sector_id %}">{{ r.sector.acronym|default:r.sector.name }}</a></td>
+      {% if "recipients.manage" in caps %}
+      <td class="text-end text-nowrap">
+        <a class="btn btn-sm btn-outline-primary" href="{% url 'organization:recipient_update' r.pk %}" title="Editar"><i class="bi bi-pencil"></i><span class="visually-hidden">Editar</span></a>
+        <form class="d-inline" method="post" action="{% url 'organization:recipient_toggle_active' r.pk %}"
+              data-confirm="{% if r.active %}Desativar {{ r.full_name }}? O histórico é mantido.{% else %}Reativar {{ r.full_name }}?{% endif %}"
+              {% if r.active %}data-confirm-style="danger"{% endif %}>
+          {% csrf_token %}
+          <button class="btn btn-sm {% if r.active %}btn-outline-danger{% else %}btn-outline-success{% endif %}" type="submit" title="{% if r.active %}Desativar{% else %}Reativar{% endif %}">
+            <i class="bi {% if r.active %}bi-person-slash{% else %}bi-person-check{% endif %}"></i><span class="visually-hidden">{% if r.active %}Desativar{% else %}Reativar{% endif %}</span>
+          </button>
+        </form>
+      </td>
+      {% endif %}
+    </tr>
+  {% empty %}
+    <tr><td colspan="5" class="text-center text-secondary py-4">Nenhum servidor encontrado.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% include "components/pagination.html" %}
+{% endblock %}

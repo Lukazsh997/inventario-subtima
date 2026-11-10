@@ -1,0 +1,89 @@
+# Sistema de Patrimônio e Estoque de TI — stack para Docker Compose / Portainer Stacks.
+# Variáveis: veja .env.example. No Portainer, informe-as em "Environment variables" da stack.
+name: patrimonio-ti
+
+x-app-env: &app-env
+  DEBUG: "false"
+  SECRET_KEY: ${SECRET_KEY:?defina SECRET_KEY}
+  ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost}
+  CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS:-}
+  USE_HTTPS: ${USE_HTTPS:-false}
+  DB_HOST: db
+  DB_PORT: "5432"
+  DB_NAME: ${DB_NAME:-patrimonio}
+  DB_USER: ${DB_USER:-patrimonio}
+  DB_PASSWORD: ${DB_PASSWORD:?defina DB_PASSWORD}
+  TIME_ZONE: ${TIME_ZONE:-America/Sao_Paulo}
+  ORG_NAME: ${ORG_NAME:-Prefeitura Municipal}
+  ORG_UNIT_NAME: ${ORG_UNIT_NAME:-Setor de Tecnologia da Informação}
+  SESSION_TIMEOUT_MINUTES: ${SESSION_TIMEOUT_MINUTES:-480}
+  LOG_LEVEL: ${LOG_LEVEL:-INFO}
+  BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-30}
+  BACKUP_TIME: ${BACKUP_TIME:-02:00}
+  LOGIN_MAX_FAILURES: ${LOGIN_MAX_FAILURES:-5}
+  LOGIN_LOCK_MINUTES: ${LOGIN_LOCK_MINUTES:-15}
+  PASSWORD_MIN_LENGTH: ${PASSWORD_MIN_LENGTH:-10}
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-patrimonio}
+      POSTGRES_USER: ${DB_USER:-patrimonio}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?defina DB_PASSWORD}
+      TZ: ${TIME_ZONE:-America/Sao_Paulo}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    image: ${APP_IMAGE:-patrimonio-ti}:${APP_VERSION:-0.1.0}
+    build:
+      context: .
+      args:
+        APP_VERSION: ${APP_VERSION:-0.1.0}
+    restart: unless-stopped
+    command: ["web"]
+    environment:
+      <<: *app-env
+      ADMIN_INITIAL_USER: ${ADMIN_INITIAL_USER:-}
+      ADMIN_INITIAL_PASSWORD: ${ADMIN_INITIAL_PASSWORD:-}
+      ADMIN_INITIAL_NAME: ${ADMIN_INITIAL_NAME:-Administrador}
+      GUNICORN_WORKERS: ${GUNICORN_WORKERS:-3}
+      FORWARDED_ALLOW_IPS: ${FORWARDED_ALLOW_IPS:-127.0.0.1}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${APP_PORT:-8000}:8000"
+    volumes:
+      - appdata:/data
+      - ${BACKUP_PATH:-backups}:/backups
+
+  scheduler:
+    image: ${APP_IMAGE:-patrimonio-ti}:${APP_VERSION:-0.1.0}
+    restart: unless-stopped
+    command: ["scheduler"]
+    environment:
+      <<: *app-env
+      LOG_TO_FILE: "false"
+    depends_on:
+      db:
+        condition: service_healthy
+      app:
+        condition: service_started
+    healthcheck:
+      disable: true
+    volumes:
+      - appdata:/data:ro
+      - ${BACKUP_PATH:-backups}:/backups
+
+volumes:
+  pgdata:
+  appdata:
+  backups:

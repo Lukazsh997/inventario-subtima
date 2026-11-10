@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Setores{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Setores</h1>
+  {% if "sectors.manage" in caps %}<a class="btn btn-primary" href="{% url 'organization:sector_create' %}"><i class="bi bi-plus-lg"></i> Novo setor</a>{% endif %}
+</div>
+<form class="row g-2 mb-3" method="get">
+  <div class="col-12 col-md-7"><input class="form-control" type="search" name="q" value="{{ request.GET.q }}" placeholder="Buscar por nome ou sigla" aria-label="Buscar"></div>
+  <div class="col-6 col-md-3">{% include "components/status_filter.html" %}</div>
+  <div class="col-6 col-md-2"><button class="btn btn-outline-secondary w-100" type="submit"><i class="bi bi-search"></i> Buscar</button></div>
+</form>
+<div class="table-responsive">
+<table class="table table-app table-hover border rounded mb-0">
+  <thead><tr><th>Setor</th><th>Sigla</th><th class="d-none d-md-table-cell">Vinculado a</th><th class="text-end">Servidores</th></tr></thead>
+  <tbody>
+  {% for s in page %}
+    <tr class="{% if not s.active %}row-inactive{% endif %}">
+      <td><a href="{% url 'organization:sector_detail' s.pk %}">{{ s.name }}</a>{% if not s.active %} <span class="badge text-bg-secondary">inativo</span>{% endif %}</td>
+      <td>{{ s.acronym|default:"—" }}</td>
+      <td class="d-none d-md-table-cell">{{ s.parent|default:"—" }}</td>
+      <td class="text-end">{{ s.recipient_count }}</td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="4" class="text-center text-secondary py-4">Nenhum setor encontrado.{% if "sectors.manage" in caps and not request.GET.q %} Comece cadastrando as secretarias.{% endif %}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% include "components/pagination.html" %}
+{% endblock %}

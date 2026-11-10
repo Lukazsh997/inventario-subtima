@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Auditoria{% endblock %}
+{% block content %}
+<div class="page-header"><h1>Auditoria</h1></div>
+<form class="row g-2 mb-3" method="get">
+  <div class="col-12 col-md-6"><input class="form-control" type="search" name="q" value="{{ request.GET.q }}" placeholder="Buscar por usuário, registro ou entidade" aria-label="Buscar"></div>
+  <div class="col-8 col-md-4">
+    <select name="acao" class="form-select" aria-label="Ação" onchange="this.form.submit()">
+      <option value="">Todas as ações</option>
+      {% for value, label in actions %}<option value="{{ value }}" {% if request.GET.acao == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-4 col-md-2"><button class="btn btn-outline-secondary w-100" type="submit"><i class="bi bi-search"></i> Buscar</button></div>
+</form>
+<div class="table-responsive">
+<table class="table table-app border rounded mb-0 align-top">
+  <thead><tr><th>Data/hora</th><th>Usuário</th><th>Ação</th><th>Registro</th><th class="d-none d-lg-table-cell">Alterações</th><th class="d-none d-md-table-cell">IP</th></tr></thead>
+  <tbody>
+  {% for e in page %}
+    <tr>
+      <td class="text-nowrap">{{ e.created_at|date:"d/m/Y H:i:s" }}</td>
+      <td>{{ e.username|default:"—" }}</td>
+      <td>{{ e.get_action_display }}</td>
+      <td><span class="text-secondary small">{{ e.entity }}</span><br>{{ e.summary }}</td>
+      <td class="d-none d-lg-table-cell small">
+        {% for field, value in e.changes.items %}
+          <div><strong>{{ field }}</strong>: {% if value.de is not None %}{{ value.de }} → {% endif %}{{ value.para|default:"—" }}</div>
+        {% endfor %}
+      </td>
+      <td class="d-none d-md-table-cell small">{{ e.ip_address|default:"—" }}</td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="6" class="text-center text-secondary py-4">Nenhum registro encontrado.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% include "components/pagination.html" %}
+{% endblock %}

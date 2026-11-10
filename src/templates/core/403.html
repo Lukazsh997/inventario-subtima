@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Acesso negado{% endblock %}
+{% block content %}
+<div class="text-center py-5">
+  <h1 class="h3">Acesso negado</h1>
+  <p class="text-secondary">Seu perfil não tem permissão para esta página ou operação.</p>
+  <a class="btn btn-primary" href="{% url 'core:home' %}">Voltar ao início</a>
+</div>
+{% endblock %}
