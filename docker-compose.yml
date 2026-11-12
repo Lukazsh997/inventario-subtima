@@ -50,6 +50,8 @@ services:
       context: .
       args:
         APP_VERSION: ${APP_VERSION:-1.0.0-rc.1}
+    # A imagem é construída no servidor a partir do Dockerfile; nunca é baixada de registro.
+    pull_policy: build
     restart: unless-stopped
     command: ["web"]
     environment:
@@ -71,6 +73,7 @@ services:
 
   scheduler:
     image: ${APP_IMAGE:-patrimonio-ti}:${APP_VERSION:-1.0.0-rc.1}
+    pull_policy: never  # usa a imagem construída pelo serviço app
     restart: unless-stopped
     command: ["scheduler"]
     environment:
@@ -92,6 +95,7 @@ services:
     image: ${APP_IMAGE:-patrimonio-ti}-proxy:${APP_VERSION:-1.0.0-rc.1}
     build:
       context: ./docker/proxy
+    pull_policy: build
     restart: unless-stopped
     environment:
       SITE_ADDRESS: ${SITE_ADDRESS:-localhost}
