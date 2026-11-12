@@ -7,3 +7,8 @@ backups/
 staticfiles/
 .pytest_cache/
 .ruff_cache/
+
+# Certificados HTTPS do órgão
+certs/
+*.pem
+*.key

@@ -50,6 +50,7 @@ As permissões são verificadas nos serviços, e não apenas na interface. O map
 cp .env.example .env      # preencha SECRET_KEY, DB_PASSWORD, ADMIN_INITIAL_PASSWORD, ALLOWED_HOSTS
 docker compose up -d --build
 curl http://localhost:8000/health/
+# HTTPS: https://<SITE_ADDRESS> (veja docs/implantacao.md)
 ```
 
 Detalhes, Portainer, HTTPS e atualização: [docs/implantacao.md](docs/implantacao.md).
@@ -70,6 +71,9 @@ Material recebido do órgão (etiquetas, modelos de termo, toners): [docs/refere
 | `CSRF_TRUSTED_ORIGINS` | com HTTPS | — | Ex.: `https://patrimonio.intranet.local` |
 | `USE_HTTPS` | | `false` | `true` atrás de proxy HTTPS (cookies seguros) |
 | `SECURE_SSL_REDIRECT` / `SECURE_HSTS_SECONDS` | | `false` / `0` | Com HTTPS: redirecionar HTTP→HTTPS e enviar HSTS |
+| `SITE_ADDRESS` | com HTTPS | `localhost` | Nomes/IPs atendidos pelo proxy HTTPS |
+| `TLS_CERT` / `CERTS_PATH` | | `internal` / — | Certificado gerado pelo sistema ou o do órgão |
+| `HTTP_PORT` / `HTTPS_PORT` / `APP_BIND` | | `80` / `443` / `0.0.0.0` | Portas do proxy; `APP_BIND=127.0.0.1` fecha a porta 8000 |
 | `FORWARDED_ALLOW_IPS` | com proxy | `127.0.0.1` | IP do proxy reverso confiável |
 | `APP_VERSION` / `APP_PORT` | | `1.0.0-rc.1` / `8000` | Tag da imagem e porta publicada |
 | `ORG_NAME` / `ORG_UNIT_NAME` | | genéricos | Nome do órgão e da unidade (tela e documentos) |

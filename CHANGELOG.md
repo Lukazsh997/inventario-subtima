@@ -7,6 +7,7 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 Fase 6 (testes, segurança e homologação). Candidata à versão 1.0.
 
 ### Adicionado
+- Serviço `proxy` (Caddy) na stack: HTTPS nas portas 80/443 com certificado gerado pelo próprio sistema (certificado raiz em `http://<servidor>/certificado-ca.crt`) ou com o certificado do órgão. Redireciona HTTP para HTTPS.
 - Importação de equipamentos por planilha CSV ou XLSX (Excel/LibreOffice), com modelo para baixar, prévia linha a linha dos problemas e gravação tudo-ou-nada. Serve para o inventário inicial, inclusive de equipamentos já em uso (setor e servidor atuais). Cada equipamento recebe sua operação de Entrada.
 - Comando `verificar_implantacao`: confere configuração (DEBUG, SECRET_KEY, ALLOWED_HOSTS), migrações, gatilhos do histórico imutável, volumes, último backup, modelos de termo e geração de PDF. Com `--json`/`--comparar`, prova que os dados sobreviveram à recriação dos containers.
 - `scripts/verificar-implantacao.sh`: teste completo de persistência no servidor (backup → instantâneo → `down`/`up` → comparação).

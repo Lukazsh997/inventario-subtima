@@ -1,0 +1,42 @@
+# Proxy HTTPS do Patrimônio TI (serviço "proxy" do docker-compose.yml).
+# SITE_ADDRESS: nomes/IPs de acesso separados por vírgula, ex.: "patrimonio.intranet.local, 10.0.0.10"
+# TLS_CERT: vazio = certificado gerado pelo próprio Caddy (autoridade interna);
+#           "/certs/cert.pem /certs/key.pem" = certificado do órgão na pasta ./certs
+{
+	admin off
+	auto_https disable_redirects
+	skip_install_trust
+	servers {
+		trusted_proxies static private_ranges
+	}
+}
+
+http:// {
+	# Certificado raiz da autoridade interna, para instalar nos computadores e celulares.
+	handle /certificado-ca.crt {
+		root * {$CA_DIR:/data/caddy/pki/authorities/local}
+		rewrite * /root.crt
+		header Content-Type application/x-x509-ca-cert
+		file_server
+	}
+	handle {
+		redir https://{host}{uri} permanent
+	}
+}
+
+{$SITE_ADDRESS} {
+	tls {$TLS_CERT:internal}
+	encode gzip
+	handle /certificado-ca.crt {
+		root * {$CA_DIR:/data/caddy/pki/authorities/local}
+		rewrite * /root.crt
+		header Content-Type application/x-x509-ca-cert
+		file_server
+	}
+	handle {
+		reverse_proxy {$UPSTREAM:app:8000}
+	}
+	request_body {
+		max_size 20MB
+	}
+}

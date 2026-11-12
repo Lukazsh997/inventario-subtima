@@ -109,6 +109,12 @@ def run_all() -> list[tuple[str, str, str]]:
     add(not settings.DEBUG, "DEBUG", "desligado" if not settings.DEBUG else "LIGADO (não use em produção)")
     weak = len(settings.SECRET_KEY) < 40 or "insecure" in settings.SECRET_KEY or "troque" in settings.SECRET_KEY
     add(not weak, "SECRET_KEY", "forte" if not weak else "curta ou valor de exemplo; gere outra")
+    add(
+        settings.USE_HTTPS,
+        "HTTPS",
+        "ativo" if settings.USE_HTTPS else "desligado (câmera do celular não funciona)",
+        warn=True,
+    )
     add("*" not in settings.ALLOWED_HOSTS, "ALLOWED_HOSTS", ", ".join(settings.ALLOWED_HOSTS))
 
     try:
