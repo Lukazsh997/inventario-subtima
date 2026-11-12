@@ -2,7 +2,7 @@
 
 PostgreSQL 17. O esquema é versionado por migrações do Django (`src/apps/*/migrations`) e nunca é alterado manualmente.
 
-## Tabelas (versão 0.2.0)
+## Tabelas (versão 0.3.0)
 
 | Tabela | Conteúdo | Regras no banco |
 |---|---|---|
@@ -18,6 +18,7 @@ PostgreSQL 17. O esquema é versionado por migrações do Django (`src/apps/*/mi
 | `inventory_stockmovement` | Linhas da operação: equipamento (quantidade 1) **ou** consumível (quantidade com sinal), saldo após, situação/setor/responsável antes | **Imutável**; exatamente um item por linha |
 | `inventory_operationaccessory` | Acessórios entregues junto (carregador, bolsa…) | **Imutável** |
 | `inventory_equipmentassignment` | Períodos de uso, empréstimo e manutenção de cada equipamento | No máximo uma atribuição aberta por equipamento |
+| `alerts_lowstockalert` | Períodos em que um material ficou no mínimo ou abaixo: identificado em, saldo e mínimo naquele momento, nível atual, normalizado em, motivo | No máximo um alerta aberto por material (índice único parcial) |
 | `core_numbersequence` | Contador anual dos números de operação | Incremento atômico (`INSERT … ON CONFLICT`) |
 | `audit_auditlog` | Auditoria: data, usuário, ação, entidade, resumo, alterações (JSON de/para), IP | **Somente inserção**: gatilhos rejeitam `UPDATE` e `DELETE` |
 
@@ -32,4 +33,4 @@ As tabelas `auth_*`, `django_*` e `django_session` são internas do framework.
 
 ## Próximas tabelas
 
-Alertas de estoque mínimo (Fase 4); modelos e termos gerados, com o PDF armazenado no próprio banco (Fase 5).
+Modelos e termos gerados, com o PDF armazenado no próprio banco (Fase 5).

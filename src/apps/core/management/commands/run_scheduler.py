@@ -1,4 +1,4 @@
-"""Agendador simples do container `scheduler`: executa o backup diário no horário configurado.
+"""Agendador simples do container `scheduler`: backup diário e reavaliação dos alertas de estoque.
 
 Evita dependências externas (cron, Celery, Redis). Novas tarefas periódicas
 (reconciliação de saldos, empréstimos vencidos) serão acrescentadas aqui.
@@ -49,7 +49,18 @@ class Command(BaseCommand):
             if stop.wait(timeout=(target - now).total_seconds()):
                 break
             self.run_backup()
+            self.run_maintenance()
         logger.info("Agendador encerrado")
+
+    def run_maintenance(self) -> None:
+        """Reavalia todos os alertas de estoque (segurança contra qualquer divergência)."""
+        from apps.alerts.services import evaluate_consumables
+
+        try:
+            evaluate_consumables(None)
+            logger.info("Alertas de estoque reavaliados")
+        except Exception as exc:  # noqa: BLE001 - o agendador não pode parar por falha de uma tarefa
+            logger.error("Falha ao reavaliar alertas", extra={"erro": str(exc)})
 
     def run_backup(self) -> None:
         try:

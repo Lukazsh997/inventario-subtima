@@ -12,6 +12,7 @@ from django.db.models import Q
 from apps.accounts.permissions import Capability, ensure_capability
 from apps.audit import services as audit
 from apps.audit.models import AuditAction
+from apps.core import events
 from apps.inventory.models import StockBalance
 
 from .identification import digits_only, normalize_identifier, normalize_scan
@@ -186,6 +187,7 @@ def save_consumable(*, actor, consumable: Consumable | None, data: dict) -> Cons
         audit.record(
             AuditAction.CREATE if creating else AuditAction.UPDATE, user=actor, instance=consumable, changes=changes
         )
+    events.publish(events.CONSUMABLES_CHANGED, consumable_ids=[consumable.pk])
     return consumable
 
 
@@ -196,4 +198,5 @@ def set_consumable_active(*, actor, consumable: Consumable, active: bool) -> Con
         consumable.active = active
         consumable.save(update_fields=["active", "updated_at"])
         audit.record(AuditAction.REACTIVATE if active else AuditAction.DEACTIVATE, user=actor, instance=consumable)
+        events.publish(events.CONSUMABLES_CHANGED, consumable_ids=[consumable.pk])
     return consumable

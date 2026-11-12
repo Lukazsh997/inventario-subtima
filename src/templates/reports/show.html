@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% load ui %}
+{% block title %}{{ report.title }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="small text-secondary"><a href="{% url 'reports:index' %}">Relatórios</a></div>
+    <h1>{{ report.title }}</h1>
+    <div class="small text-secondary">{{ report.description }}</div>
+  </div>
+  {% if result and result.columns %}
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-primary" href="?{% if querystring %}{{ querystring }}&{% endif %}formato=pdf"><i class="bi bi-file-earmark-pdf"></i> PDF</a>
+    <a class="btn btn-outline-primary" href="?{% if querystring %}{{ querystring }}&{% endif %}formato=csv"><i class="bi bi-filetype-csv"></i> CSV</a>
+  </div>
+  {% endif %}
+</div>
+
+{% with fields=form.visible %}
+{% if fields %}
+<form class="row g-2 mb-3 align-items-end" method="get">
+  {% for field in fields %}
+  <div class="col-12 col-md-{% if field.name == 'atrasados' %}3{% elif field.name == 'equipamento' or field.name == 'servidor' %}6{% else %}3{% endif %} col-xl-{% if field.name == 'equipamento' %}5{% else %}2{% endif %}">
+    {% if field.name == "atrasados" %}
+    <div class="form-check mb-2">{{ field|add_class:"form-check-input" }} <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label></div>
+    {% else %}
+    <label class="form-label small mb-1" for="{{ field.id_for_label }}">{{ field.label }}</label>
+    {% if field.field.widget.input_type == "select" %}{{ field|add_class:"form-select" }}{% else %}{{ field|add_class:"form-control" }}{% endif %}
+    {% for e in field.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+    {% endif %}
+  </div>
+  {% endfor %}
+  <div class="col-12 col-md-3 col-xl-2"><button class="btn btn-primary w-100" type="submit">Gerar</button></div>
+</form>
+{% endif %}
+{% endwith %}
+
+{% if result %}
+  {% if result.header %}
+  <div class="card mb-3"><div class="card-body"><dl class="row mb-0 small">
+    {% for label, value in result.header %}<dt class="col-5 col-md-3">{{ label }}</dt><dd class="col-7 col-md-9">{{ value }}</dd>{% endfor %}
+  </dl></div></div>
+  {% endif %}
+  {% if result.summary %}<p class="small text-secondary mb-2">{{ result.summary|join:" · " }}</p>{% endif %}
+  {% if result.columns %}
+  <div class="table-responsive">
+  <table class="table table-app table-sm border rounded mb-0">
+    <thead><tr>{% for c in result.columns %}<th class="{% if c.align == 'end' %}text-end{% endif %}">{{ c.label }}</th>{% endfor %}</tr></thead>
+    <tbody>
+    {% for row in page %}
+      <tr>{% for c in result.columns %}<td class="{% if c.align == 'end' %}text-end{% endif %}">{{ row|get_item:c.key }}</td>{% endfor %}</tr>
+    {% empty %}
+      <tr><td colspan="{{ result.columns|length }}" class="text-center text-secondary py-4">Nenhum registro com esses filtros.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% include "components/pagination.html" %}
+  {% endif %}
+{% elif report.requires %}
+  <div class="alert alert-light border">Informe o {{ report.requires }} para gerar o relatório.</div>
+{% endif %}
+{% endblock %}

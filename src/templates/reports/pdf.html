@@ -1,0 +1,57 @@
+{% load ui %}<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<title>{{ report.title }}</title>
+<style>
+  @page {
+    size: A4 {% if report.landscape %}landscape{% else %}portrait{% endif %};
+    margin: 16mm 12mm 16mm 12mm;
+    @bottom-left { content: "{{ ORG_NAME|escapejs }} · {{ ORG_UNIT_NAME|escapejs }}"; font-family: "Liberation Sans", "DejaVu Sans", sans-serif; font-size: 7.5pt; color: #666; }
+    @bottom-right { content: "Página " counter(page) " de " counter(pages); font-family: "Liberation Sans", "DejaVu Sans", sans-serif; font-size: 7.5pt; color: #666; }
+  }
+  body { font-family: "Liberation Sans", "DejaVu Sans", Arial, sans-serif; font-size: 8.5pt; color: #111; }
+  header { border-bottom: 1.5pt solid #12355b; padding-bottom: 4mm; margin-bottom: 4mm; }
+  .org { font-size: 8pt; color: #444; text-transform: uppercase; letter-spacing: .03em; }
+  h1 { font-size: 14pt; margin: 1.5mm 0 1mm; color: #12355b; }
+  .meta { font-size: 7.5pt; color: #555; }
+  .filters { margin-top: 1.5mm; font-size: 8pt; }
+  dl { display: grid; grid-template-columns: 35mm auto; gap: 1mm 3mm; margin: 0 0 4mm; font-size: 8.5pt; }
+  dt { font-weight: bold; }
+  dd { margin: 0; }
+  table { width: 100%; border-collapse: collapse; }
+  thead { display: table-header-group; }
+  th { text-align: left; font-size: 7.5pt; text-transform: uppercase; color: #333; border-bottom: 1pt solid #12355b; padding: 1.5mm 1.5mm; }
+  td { padding: 1.3mm 1.5mm; border-bottom: .4pt solid #ddd; vertical-align: top; }
+  tr { page-break-inside: avoid; }
+  tbody tr:nth-child(even) td { background: #f5f7fa; }
+  .end { text-align: right; }
+  .summary { margin-top: 3mm; font-size: 8pt; color: #333; }
+  .empty { padding: 6mm; text-align: center; color: #666; }
+</style>
+</head>
+<body>
+<header>
+  <div class="org">{{ ORG_NAME }} · {{ ORG_UNIT_NAME }}</div>
+  <h1>{{ report.title }}</h1>
+  <div class="meta">Gerado em {{ generated_at|date:"d/m/Y H:i" }} por {{ user.full_name|default:user.username }}</div>
+  {% if filters %}<div class="filters">{{ filters|join:" · " }}</div>{% endif %}
+</header>
+{% if result.header %}
+<dl>{% for label, value in result.header %}<dt>{{ label }}</dt><dd>{{ value }}</dd>{% endfor %}</dl>
+{% endif %}
+{% if result.columns %}
+<table>
+  <thead><tr>{% for c in result.columns %}<th class="{% if c.align == 'end' %}end{% endif %}">{{ c.label }}</th>{% endfor %}</tr></thead>
+  <tbody>
+  {% for row in result.rows %}
+    <tr>{% for c in result.columns %}<td class="{% if c.align == 'end' %}end{% endif %}">{{ row|get_item:c.key }}</td>{% endfor %}</tr>
+  {% empty %}
+    <tr><td class="empty" colspan="{{ result.columns|length }}">Nenhum registro com esses filtros.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+{% if result.summary %}<div class="summary">{{ result.summary|join:" · " }}</div>{% endif %}
+</body>
+</html>

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Materiais críticos{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Materiais críticos</h1>
+    <div class="small text-secondary">Materiais ativos com estoque mínimo configurado cujo saldo está no mínimo ou abaixo.</div>
+  </div>
+  <div class="btn-group" role="group" aria-label="Visão">
+    <a class="btn {% if not history %}btn-primary{% else %}btn-outline-primary{% endif %}" href="?">Abertos</a>
+    <a class="btn {% if history %}btn-primary{% else %}btn-outline-primary{% endif %}" href="?historico=1">Histórico</a>
+  </div>
+</div>
+<div class="table-responsive">
+<table class="table table-app border rounded mb-0">
+  <thead>
+    <tr>
+      <th>Material</th><th>Nível</th><th class="text-end">Saldo</th><th class="text-end">Mínimo</th>
+      <th>Identificado em</th>
+      {% if history %}<th>Normalizado em</th><th>Motivo</th>
+      {% else %}<th class="text-end d-none d-lg-table-cell" title="Média dos últimos {{ window }} dias">Consumo/mês</th><th class="text-end d-none d-lg-table-cell">Dura ~</th><th class="text-end">Sugestão de compra</th>{% if "inventory.operate" in caps %}<th></th>{% endif %}{% endif %}
+    </tr>
+  </thead>
+  <tbody>
+  {% for row in rows %}{% with a=row.alert c=row.alert.consumable %}
+    <tr class="{% if not history %}{% if a.level == 'zerado' %}row-empty{% else %}row-critical{% endif %}{% endif %}">
+      <td><a href="{% url 'catalog:consumable_detail' c.pk %}">{{ c.name }}</a><div class="small text-secondary">{{ c.category }}{% if c.compatibility %} · {{ c.compatibility }}{% endif %}</div></td>
+      <td>{% if a.level == "zerado" %}<span class="badge text-bg-danger"><i class="bi bi-x-octagon"></i> {{ a.get_level_display }}</span>{% else %}<span class="badge text-bg-warning"><i class="bi bi-exclamation-triangle"></i> {{ a.get_level_display }}</span>{% endif %}</td>
+      <td class="text-end fw-semibold">{% if history %}{{ a.current_balance }}{% else %}{{ c.balance.quantity }}{% endif %}</td>
+      <td class="text-end">{% if history %}{{ a.min_stock_at_open }}{% else %}{{ c.min_stock }}{% endif %}</td>
+      <td class="text-nowrap">{{ a.opened_at|date:"d/m/Y H:i" }}<div class="small text-secondary">saldo {{ a.balance_at_open }}</div></td>
+      {% if history %}
+      <td class="text-nowrap">{{ a.closed_at|date:"d/m/Y H:i" }}</td><td class="small">{{ a.closed_reason }}</td>
+      {% else %}
+      <td class="text-end d-none d-lg-table-cell">{{ row.avg|floatformat:1 }}</td>
+      <td class="text-end d-none d-lg-table-cell">{% if row.days_left is not None %}{{ row.days_left }} dias{% else %}—{% endif %}</td>
+      <td class="text-end">{% if row.suggested %}{{ row.suggested }} {{ c.get_unit_display }}{% else %}—{% endif %}</td>
+      {% if "inventory.operate" in caps %}<td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{% url 'inventory:consumable_operation' %}?tipo=entrada&material={{ c.pk }}">Entrada</a></td>{% endif %}
+      {% endif %}
+    </tr>
+  {% endwith %}{% empty %}
+    <tr><td colspan="9" class="text-center text-secondary py-4">{% if history %}Nenhum alerta encerrado.{% else %}Nenhum material crítico. Os alertas só existem para materiais com estoque mínimo configurado.{% endif %}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% include "components/pagination.html" %}
+{% if not history %}<p class="small text-secondary mt-2">Sugestão de compra = quantidade para voltar ao mínimo e cobrir 3 meses do consumo médio dos últimos {{ window }} dias.</p>{% endif %}
+{% endblock %}

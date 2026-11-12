@@ -26,6 +26,12 @@ def status_badge(equipment):
 
 
 @register.filter
+def get_item(mapping, key):
+    """Valor de um dicionário por chave variável (linhas de relatório)."""
+    return mapping.get(key, "") if hasattr(mapping, "get") else ""
+
+
+@register.filter
 def signed(value) -> str:
     try:
         return f"{int(value):+d}"

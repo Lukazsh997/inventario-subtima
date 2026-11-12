@@ -7,6 +7,8 @@ urlpatterns = [
     path("auditoria/", include("apps.audit.urls")),
     path("estoque/", include("apps.catalog.urls")),
     path("estoque/", include("apps.inventory.urls")),
+    path("alertas/", include("apps.alerts.urls")),
+    path("relatorios/", include("apps.reports.urls")),
 ]
 
 handler403 = "apps.core.views.permission_denied"

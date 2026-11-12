@@ -2,6 +2,23 @@
 
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). Versões seguem [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.3.0] - 2026-11-12
+
+Fase 4 (painel, alertas e relatórios).
+
+### Adicionado
+- Painel inicial com os 8 indicadores pedidos: equipamentos cadastrados, disponíveis, emprestados (com atrasados), em manutenção, unidades em estoque, movimentações no mês, estoque baixo e sem estoque.
+- Seis gráficos (Chart.js local): entradas e saídas, consumo mensal, materiais mais retirados, equipamentos por setor, evolução do estoque e equipamentos por categoria. Cada um tem tabela equivalente ("Ver tabela").
+- Filtros do painel por período, categoria e setor; atividades recentes.
+- Alertas de estoque mínimo: registram quando a condição surge, atualizam o nível (baixo/zerado) sem duplicar, fecham ao normalizar e reabrem se voltar a faltar. Reagem a entradas, saídas, estornos, mudança de mínimo e desativação.
+- Página "Materiais críticos" com consumo médio de 90 dias, duração estimada e sugestão de compra; histórico de alertas encerrados; contador no menu.
+- 10 relatórios com filtros e exportação PDF (A4, cabeçalho, filtros aplicados e paginação) e CSV (Excel em português, proteção contra fórmulas): estoque atual, histórico de entradas, histórico de saídas, consumo mensal, abaixo do mínimo, equipamentos por setor, por responsável, emprestados, em manutenção e histórico individual.
+- Reavaliação noturna dos alertas pelo agendador.
+- 25 testes novos (122 no total), incluindo a conferência dos números do painel contra consultas diretas ao banco.
+
+### Alterado
+- Imagem Docker inclui as bibliotecas do WeasyPrint e as fontes Liberation, Carlito e Caladea (métricas de Arial, Calibri e Cambria) para os PDFs.
+
 ## [0.2.0] - 2026-11-12
 
 Fase 3 (estoque).
