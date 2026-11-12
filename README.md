@@ -4,7 +4,7 @@ Sistema web de gestão de patrimônio e estoque de TI: equipamentos identificado
 
 Desenvolvido para a Subsecretaria de Tecnologia da Informação e Modernização Administrativa (SUBTIMA) da Prefeitura Municipal de Duque de Caxias. Roda inteiramente na rede interna, em Docker, apenas com software livre.
 
-## Situação atual: versão 0.1.0 (Fase 2: fundação)
+## Situação atual: versão 0.2.0 (Fase 3: estoque)
 
 | Módulo | Situação |
 |---|---|
@@ -13,19 +13,26 @@ Desenvolvido para a Subsecretaria de Tecnologia da Informação e Modernização
 | Setores (hierarquia), locais físicos, servidores recebedores | pronto |
 | Auditoria somente-inserção | pronto |
 | Docker, health check, logs JSON, backup/restauração, agendador | pronto |
-| Equipamentos, consumíveis, leitura de etiquetas, movimentações | Fase 3 |
-| Dashboard, alertas de estoque mínimo, relatórios | Fase 4 |
+| Categorias, equipamentos (próprios e locados), materiais de consumo | pronto |
+| Leitura das etiquetas existentes (câmera e leitor USB), busca global | pronto |
+| Entradas, saídas, transferências, devoluções, empréstimos, manutenção, ajuste, baixa, estorno | pronto |
+| Histórico imutável, saldo nunca negativo, histórico de localização/responsabilidade | pronto |
+| Dashboard com gráficos, alertas de estoque mínimo, relatórios PDF/CSV | Fase 4 |
 | Termos em PDF a partir dos modelos institucionais | Fase 5 |
+
+Guia de uso para a equipe: [docs/operacao.md](docs/operacao.md).
 
 ### Perfis
 
 | Capacidade | Administrador | Técnico de TI | Consulta |
 |---|:-:|:-:|:-:|
-| Consultar setores e servidores | ✓ | ✓ | ✓ |
+| Consultar setores, servidores, equipamentos, materiais e movimentações | ✓ | ✓ | ✓ |
 | Cadastrar/editar servidores recebedores | ✓ | ✓ | |
-| Cadastrar/editar setores e locais | ✓ | | |
-| Gerenciar usuários | ✓ | | |
-| Consultar auditoria | ✓ | | |
+| Entrada de equipamentos, cadastro de materiais | ✓ | ✓ | |
+| Saídas, transferências, devoluções, empréstimos, manutenção, entradas de material | ✓ | ✓ | |
+| Baixa de equipamento, ajuste de estoque, estorno | ✓ | | |
+| Categorias, setores e locais | ✓ | | |
+| Gerenciar usuários, consultar auditoria | ✓ | | |
 
 As permissões são verificadas nos serviços, e não apenas na interface. O mapa fica em `src/apps/accounts/permissions.py`.
 
@@ -53,7 +60,7 @@ Material recebido do órgão (etiquetas, modelos de termo, toners): [docs/refere
 | `CSRF_TRUSTED_ORIGINS` | com HTTPS | — | Ex.: `https://patrimonio.intranet.local` |
 | `USE_HTTPS` | | `false` | `true` atrás de proxy HTTPS (cookies seguros) |
 | `FORWARDED_ALLOW_IPS` | com proxy | `127.0.0.1` | IP do proxy reverso confiável |
-| `APP_VERSION` / `APP_PORT` | | `0.1.0` / `8000` | Tag da imagem e porta publicada |
+| `APP_VERSION` / `APP_PORT` | | `0.2.0` / `8000` | Tag da imagem e porta publicada |
 | `ORG_NAME` / `ORG_UNIT_NAME` | | genéricos | Nome do órgão e da unidade (tela e documentos) |
 | `TIME_ZONE` | | `America/Sao_Paulo` | Fuso horário |
 | `SESSION_TIMEOUT_MINUTES` | | `480` | Sessão expira após inatividade |
@@ -75,6 +82,8 @@ src/
 │   ├── core/          health check, listagem/paginação, agendador, componentes
 │   ├── accounts/      usuários, perfis/RBAC, login com bloqueio
 │   ├── organization/  setores, locais, servidores recebedores
+│   ├── catalog/       categorias, equipamentos, materiais, leitura de etiquetas
+│   ├── inventory/     operações, movimentações, saldos, atribuições, estorno
 │   └── audit/         auditoria somente-inserção
 ├── templates/         layout base e componentes reutilizáveis
 └── static/            CSS/JS do sistema e bibliotecas locais

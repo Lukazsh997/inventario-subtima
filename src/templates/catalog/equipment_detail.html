@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% load ui %}
+{% block title %}{{ equipment.name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="small text-secondary"><a href="{% url 'catalog:equipment_list' %}">Equipamentos</a> › {{ equipment.category }}</div>
+    <h1>{{ equipment.name }} {% status_badge equipment %}</h1>
+  </div>
+  {% if "catalog.manage" in caps and equipment.status != "baixado" %}
+  <a class="btn btn-outline-primary" href="{% url 'catalog:equipment_update' equipment.pk %}"><i class="bi bi-pencil"></i> Corrigir cadastro</a>
+  {% endif %}
+</div>
+
+{% if equipment.is_leased and equipment.status != "baixado" %}
+<div class="alert alert-warning"><i class="bi bi-exclamation-triangle"></i> Equipamento <strong>locado</strong>{% if equipment.lessor %} ({{ equipment.lessor }}){% endif %}. A etiqueta da locadora pede contato prévio antes de movimentá-lo.</div>
+{% endif %}
+
+<div class="row g-3">
+  <div class="col-12 col-xl-5">
+    <div class="card mb-3">
+      <div class="card-header bg-white fw-semibold">Situação atual</div>
+      <div class="card-body">
+        <dl class="row mb-0">
+          <dt class="col-5">Onde está</dt><dd class="col-7">{{ equipment.location_label }}{% if equipment.current_location %}<div class="small text-secondary">{{ equipment.current_location.name }}</div>{% endif %}</dd>
+          <dt class="col-5">Responsável</dt><dd class="col-7">{{ equipment.current_recipient|default:"—" }}</dd>
+        </dl>
+        {% if actions and "inventory.operate" in caps %}
+        <div class="d-flex flex-wrap gap-2 mt-3">
+          {% for op, label in actions %}
+            {% if op != "baixa" or "equipment.write_off" in caps %}
+            <a class="btn btn-sm {% if op == 'baixa' %}btn-outline-danger{% else %}btn-primary{% endif %}" href="{% url 'inventory:equipment_operation' %}?tipo={{ op }}&equipamento={{ equipment.pk }}">{{ label }}</a>
+            {% endif %}
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header bg-white fw-semibold">Ficha</div>
+      <div class="card-body">
+        <dl class="row mb-0 small">
+          <dt class="col-5">Patrimônio</dt><dd class="col-7">{{ equipment.asset_tag|default:"—" }}</dd>
+          <dt class="col-5">Nº de série</dt><dd class="col-7">{{ equipment.serial_number|default:"—" }}</dd>
+          <dt class="col-5">Código da locadora</dt><dd class="col-7">{{ equipment.lessor_code|default:"—" }}</dd>
+          <dt class="col-5">Propriedade</dt><dd class="col-7">{{ equipment.get_ownership_display }}{% if equipment.lessor %} · {{ equipment.lessor }}{% endif %}</dd>
+          <dt class="col-5">Fabricante / modelo</dt><dd class="col-7">{{ equipment.manufacturer|default:"—" }} {{ equipment.model }}</dd>
+          <dt class="col-5">Estado de conservação</dt><dd class="col-7">{{ equipment.get_condition_display }}</dd>
+          <dt class="col-5">Data de aquisição</dt><dd class="col-7">{{ equipment.acquisition_date|date:"d/m/Y"|default:"—" }}</dd>
+          <dt class="col-5">Cadastrado</dt><dd class="col-7">{{ equipment.created_at|date:"d/m/Y H:i" }} por {{ equipment.created_by.full_name }}</dd>
+          {% if equipment.notes %}<dt class="col-5">Observações</dt><dd class="col-7">{{ equipment.notes|linebreaksbr }}</dd>{% endif %}
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-xl-7">
+    <div class="card mb-3">
+      <div class="card-header bg-white fw-semibold">Histórico de localização e responsabilidade</div>
+      <div class="card-body">
+        <ul class="timeline">
+          {% for a in assignments %}
+          <li>
+            <div class="fw-semibold">{{ a.get_kind_display }}{% if a.sector %} · {{ a.sector }}{% endif %}{% if a.third_party %} · {{ a.third_party }}{% endif %}</div>
+            <div class="small">{% if a.recipient %}{{ a.recipient }}{% endif %}{% if a.location %} · {{ a.location.name }}{% endif %}{% if a.due_date %} · devolução prevista {{ a.due_date|date:"d/m/Y" }}{% endif %}</div>
+            <div class="small text-secondary">{{ a.started_at|date:"d/m/Y H:i" }} → {% if a.ended_at %}{{ a.ended_at|date:"d/m/Y H:i" }}{% else %}<strong>atual</strong>{% endif %}</div>
+          </li>
+          {% empty %}
+          <li class="reversed"><span class="text-secondary">Sempre esteve no estoque da TI.</span></li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header bg-white fw-semibold">Movimentações</div>
+      <div class="table-responsive">
+        <table class="table table-sm mb-0">
+          <thead><tr><th>Data</th><th>Operação</th><th>Situação</th><th class="d-none d-md-table-cell">Destino</th><th class="d-none d-md-table-cell">Por</th></tr></thead>
+          <tbody>
+          {% for m in movements %}
+            <tr>
+              <td class="text-nowrap small">{{ m.operation.performed_at|date:"d/m/Y H:i" }}</td>
+              <td><a href="{% url 'inventory:operation_detail' m.operation.pk %}">{{ m.operation.number }}</a><div class="small">{{ m.operation.get_type_display }}</div></td>
+              <td class="small">{% if m.status_before %}{{ m.get_status_before_display }} → {% endif %}{{ m.get_status_after_display }}</td>
+              <td class="d-none d-md-table-cell small">{% firstof m.operation.destination_sector.acronym m.operation.destination_sector.name "—" %}{% if m.operation.recipient %}<div>{{ m.operation.recipient.full_name }}</div>{% endif %}</td>
+              <td class="d-none d-md-table-cell small">{{ m.operation.performed_by.full_name }}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

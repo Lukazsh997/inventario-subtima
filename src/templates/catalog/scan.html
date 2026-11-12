@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load ui %}
+{% block title %}Ler etiqueta{% endblock %}
+{% block content %}
+<div class="page-header"><h1>Ler etiqueta</h1></div>
+<div class="card mb-3" style="max-width:720px"><div class="card-body">
+  <form method="get">
+    <label class="form-label" for="scan-code">Use o leitor USB, a câmera, ou digite o patrimônio, a série ou o código ACES.</label>
+    <div class="input-group input-group-lg">
+      <input class="form-control" id="scan-code" type="text" name="codigo" value="{{ raw }}" autocomplete="off" autofocus>
+      <button class="btn btn-outline-secondary" type="button" data-scan-target="#scan-code" data-scan-submit title="Ler com a câmera"><i class="bi bi-camera"></i><span class="visually-hidden">Câmera</span></button>
+      <button class="btn btn-primary" type="submit">Abrir</button>
+    </div>
+  </form>
+</div></div>
+{% if raw %}
+  {% if matches %}
+  <div class="card" style="max-width:720px">
+    <div class="card-header bg-white">Mais de um equipamento corresponde a <strong>{{ code }}</strong>:</div>
+    <ul class="list-group list-group-flush">
+      {% for e in matches %}<li class="list-group-item d-flex justify-content-between"><a href="{% url 'catalog:equipment_detail' e.pk %}">{{ e.name }} · {{ e.main_identifier }}</a>{% status_badge e %}</li>{% endfor %}
+    </ul>
+  </div>
+  {% else %}
+  <div class="alert alert-warning" style="max-width:720px">
+    Nenhum equipamento cadastrado com o código <strong>{{ code|default:raw }}</strong>.
+    {% if "catalog.manage" in caps %}<a class="alert-link" href="{% url 'catalog:equipment_create' %}">Registrar a entrada deste equipamento</a>.{% endif %}
+  </div>
+  {% endif %}
+{% endif %}
+{% endblock %}

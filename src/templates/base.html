@@ -31,6 +31,18 @@
       </div>
       <ul class="nav flex-column px-2 flex-grow-1">
         <li class="nav-item"><a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{% url 'core:home' %}"><i class="bi bi-house"></i> Início</a></li>
+        {% if "inventory.view" in caps %}
+        <li class="app-nav-section">Estoque</li>
+        <li class="nav-item"><a class="nav-link {% active_if '/estoque/ler' %}" href="{% url 'catalog:scan' %}"><i class="bi bi-qr-code-scan"></i> Ler etiqueta</a></li>
+        {% if "inventory.operate" in caps %}
+        <li class="nav-item"><a class="nav-link {% active_if '/estoque/operacoes/equipamentos/nova' %}" href="{% url 'inventory:equipment_operation' %}"><i class="bi bi-box-arrow-up-right"></i> Movimentar equipamento</a></li>
+        <li class="nav-item"><a class="nav-link {% active_if '/estoque/operacoes/materiais/nova' %}" href="{% url 'inventory:consumable_operation' %}"><i class="bi bi-cart-dash"></i> Retirada de material</a></li>
+        {% endif %}
+        <li class="nav-item"><a class="nav-link {% active_if '/estoque/equipamentos' %}" href="{% url 'catalog:equipment_list' %}"><i class="bi bi-pc-display"></i> Equipamentos</a></li>
+        <li class="nav-item"><a class="nav-link {% active_if '/estoque/materiais' %}" href="{% url 'catalog:consumable_list' %}"><i class="bi bi-box-seam"></i> Materiais de consumo</a></li>
+        <li class="nav-item"><a class="nav-link {% if request.path == '/estoque/operacoes/' or '/estoque/operacoes/' in request.path and '/nova/' not in request.path %}active{% endif %}" href="{% url 'inventory:operation_list' %}"><i class="bi bi-arrow-left-right"></i> Movimentações</a></li>
+        <li class="nav-item"><a class="nav-link {% active_if '/estoque/categorias' %}" href="{% url 'catalog:category_list' %}"><i class="bi bi-tags"></i> Categorias</a></li>
+        {% endif %}
         {% if "org.view" in caps %}
         <li class="app-nav-section">Organização</li>
         <li class="nav-item"><a class="nav-link {% active_if '/organizacao/setores' %}" href="{% url 'organization:sector_list' %}"><i class="bi bi-diagram-3"></i> Setores</a></li>
@@ -62,16 +74,27 @@
 
   <main class="app-main flex-grow-1">
     <div class="container-fluid py-4 px-3 px-lg-4">
+      <form class="app-search mb-3" method="get" action="{% url 'core:search' %}" role="search">
+        <div class="input-group">
+          <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+          <input class="form-control" type="search" name="q" value="{{ search_term|default:'' }}" id="globalSearchInput" placeholder="Buscar ou ler código: patrimônio, série, ACES, nome, servidor, nº da operação" aria-label="Busca global" autocomplete="off">
+          {% if "inventory.view" in caps %}<button class="btn btn-outline-secondary" type="button" data-scan-target="#globalSearchInput" data-scan-submit title="Ler com a câmera"><i class="bi bi-camera"></i><span class="visually-hidden">Ler com a câmera</span></button>{% endif %}
+        </div>
+      </form>
       {% include "components/messages.html" %}
       {% block content %}{% endblock %}
     </div>
   </main>
 </div>
 {% include "components/confirm_modal.html" %}
+{% include "components/scanner_modal.html" %}
 {% endblock %}
 <script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
 <script src="{% static 'vendor/htmx/htmx.min.js' %}"></script>
 <script defer src="{% static 'vendor/alpine/alpine.min.js' %}"></script>
+<script src="{% static 'vendor/html5-qrcode/html5-qrcode.min.js' %}" defer></script>
 <script src="{% static 'js/app.js' %}"></script>
+<script src="{% static 'js/scanner.js' %}"></script>
+{% block scripts %}{% endblock %}
 </body>
 </html>

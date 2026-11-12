@@ -12,6 +12,8 @@ class AuditAction(models.TextChoices):
     REACTIVATE = "reactivate", "Reativação"
     PASSWORD_CHANGE = "password_change", "Troca de senha"
     PASSWORD_RESET = "password_reset", "Redefinição de senha"
+    OPERATION = "operation", "Movimentação"
+    REVERSAL = "reversal", "Estorno"
 
 
 class AuditLog(models.Model):

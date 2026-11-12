@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% load ui %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="page-header"><h1>{{ title }}</h1></div>
+<form method="post" novalidate x-data="{ ownership: '{{ form.ownership.value|default:'proprio' }}', inUse: {% if placement and placement.in_use.value %}true{% else %}false{% endif %} }">
+  {% csrf_token %}
+  {% if form.non_field_errors %}<div class="alert alert-danger">{% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}</div>{% endif %}
+  <div class="row g-3">
+    <div class="col-12 col-xl-6">
+      <div class="card h-100"><div class="card-body">
+        <h2 class="h6 text-uppercase text-secondary mb-3">Identificação pela etiqueta</h2>
+        <p class="small text-secondary">Clique no campo e use o leitor USB, ou toque na câmera. O link do QR da locadora é convertido automaticamente.</p>
+        {% for field in form %}{% if field.name in form.identifier_fields %}
+        <div class="mb-3">
+          <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+          <div class="input-group">
+            {{ field|add_class:"form-control" }}
+            <button class="btn btn-outline-secondary" type="button" data-scan-target="#{{ field.id_for_label }}" title="Ler com a câmera"><i class="bi bi-camera"></i><span class="visually-hidden">Ler com a câmera</span></button>
+          </div>
+          {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+          {% for e in field.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+        </div>
+        {% endif %}{% endfor %}
+        <div class="mb-3">
+          <label class="form-label" for="{{ form.ownership.id_for_label }}">{{ form.ownership.label }}</label>
+          {{ form.ownership|add_class:"form-select" }}
+        </div>
+        <div class="mb-0" x-show="ownership === 'locado'" x-cloak>
+          <label class="form-label" for="{{ form.lessor.id_for_label }}">{{ form.lessor.label }}</label>
+          {{ form.lessor|add_class:"form-control" }}
+          {% for e in form.lessor.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+        </div>
+      </div></div>
+    </div>
+    <div class="col-12 col-xl-6">
+      <div class="card h-100"><div class="card-body">
+        <h2 class="h6 text-uppercase text-secondary mb-3">Dados do equipamento</h2>
+        {% for field in form %}{% if field.name in "category,name,manufacturer,model,condition,acquisition_date,notes" %}
+        <div class="mb-3">
+          <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <span class="text-danger">*</span>{% endif %}</label>
+          {% if field.field.widget.input_type == "select" %}{{ field|add_class:"form-select" }}{% else %}{{ field|add_class:"form-control" }}{% endif %}
+          {% for e in field.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+        </div>
+        {% endif %}{% endfor %}
+      </div></div>
+    </div>
+    {% if placement %}
+    <div class="col-12">
+      <div class="card"><div class="card-body">
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="checkbox" name="{{ placement.in_use.html_name }}" id="{{ placement.in_use.id_for_label }}" x-model="inUse">
+          <label class="form-check-label" for="{{ placement.in_use.id_for_label }}">{{ placement.in_use.label }}</label>
+        </div>
+        <p class="small text-secondary mb-0" x-show="!inUse">Sem marcar, o equipamento entra como <strong>disponível no estoque da TI</strong>.</p>
+        <div x-show="inUse" x-cloak>
+          {% include "inventory/_destination_fields.html" with form=placement %}
+        </div>
+      </div></div>
+    </div>
+    {% endif %}
+  </div>
+  <div class="d-flex flex-wrap gap-2 mt-3">
+    <button class="btn btn-primary" type="submit">Salvar</button>
+    {% if placement %}<button class="btn btn-outline-primary" type="submit" name="outro" value="1">Salvar e cadastrar outro igual</button>{% endif %}
+    <a class="btn btn-outline-secondary" href="{% if equipment %}{% url 'catalog:equipment_detail' equipment.pk %}{% else %}{% url 'catalog:equipment_list' %}{% endif %}">Cancelar</a>
+  </div>
+</form>
+{% endblock %}

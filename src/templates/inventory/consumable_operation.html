@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% load ui %}
+{% block title %}Movimentar material{% endblock %}
+{% block content %}
+<div class="page-header"><h1>Movimentar material de consumo</h1></div>
+{{ consumables|json_script:"consumables-data" }}
+{{ lines|json_script:"lines-data" }}
+<form method="post" novalidate x-data="consumableOperation('{{ op_type }}')">
+  {% csrf_token %}
+  {% if form.non_field_errors %}<div class="alert alert-danger">{% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}</div>{% endif %}
+
+  <div class="card mb-3"><div class="card-body">
+    <label class="form-label fw-semibold" for="op-type">1. Tipo de operação</label>
+    <select class="form-select" id="op-type" name="type" x-model="type">
+      {% for v, l in types %}<option value="{{ v }}" {% if v == op_type %}selected{% endif %}>{{ l }}</option>{% endfor %}
+    </select>
+    <div class="form-text" x-show="type === 'ajuste'">No ajuste, use quantidade positiva para acrescentar e negativa para retirar (ex.: -2).</div>
+  </div></div>
+
+  <div class="card mb-3"><div class="card-body">
+    <div class="fw-semibold mb-2">2. Materiais e quantidades</div>
+    <template x-for="(line, index) in lines" :key="index">
+      <div class="row g-2 mb-2 align-items-center">
+        <div class="col-12 col-md-7">
+          <select class="form-select" name="consumable_id" x-model="line.consumable_id" aria-label="Material">
+            <option value="">— escolha o material —</option>
+            <template x-for="c in consumables" :key="c.id">
+              <option :value="c.id" x-text="c.name + ' (saldo: ' + c.balance + ' ' + c.unit + ')'" :selected="String(c.id) === String(line.consumable_id)"></option>
+            </template>
+          </select>
+        </div>
+        <div class="col-8 col-md-3">
+          <input class="form-control" name="quantity" type="number" x-model="line.quantity" :min="type === 'ajuste' ? null : 1" placeholder="Quantidade" aria-label="Quantidade">
+        </div>
+        <div class="col-4 col-md-2 d-flex gap-2 align-items-center">
+          <span class="small" :class="exceeds(line) ? 'text-danger fw-semibold' : 'text-secondary'" x-text="hint(line)"></span>
+          <button class="btn btn-outline-danger btn-sm ms-auto" type="button" @click="lines.splice(index, 1)" x-show="lines.length > 1"><i class="bi bi-x-lg"></i><span class="visually-hidden">Remover linha</span></button>
+        </div>
+      </div>
+    </template>
+    <button class="btn btn-sm btn-outline-secondary" type="button" @click="lines.push({consumable_id: '', quantity: ''})"><i class="bi bi-plus-lg"></i> Outro material</button>
+  </div></div>
+
+  <div class="card mb-3" x-show="type === 'saida'" x-cloak><div class="card-body">
+    <div class="fw-semibold mb-2">3. Setor solicitante e quem recebe</div>
+    {% include "inventory/_destination_fields.html" with form=form %}
+  </div></div>
+
+  <div class="card mb-3"><div class="card-body">
+    <div class="row g-3">
+      <div class="col-12 col-md-6" x-show="type === 'devolucao'" x-cloak>
+        <label class="form-label" for="{{ form.origin_sector.id_for_label }}">{{ form.origin_sector.label }} <span class="text-danger">*</span></label>
+        {{ form.origin_sector|add_class:"form-select" }}
+      </div>
+      <div class="col-12 col-md-6" x-show="type === 'entrada'" x-cloak>
+        <label class="form-label" for="{{ form.third_party.id_for_label }}">Fornecedor / nº da nota ou empenho</label>
+        {{ form.third_party|add_class:"form-control" }}
+      </div>
+      <div class="col-12">
+        <label class="form-label" for="{{ form.justification.id_for_label }}">{{ form.justification.label }} <span class="text-danger" x-show="type === 'ajuste'">*</span></label>
+        {{ form.justification|add_class:"form-control" }}
+      </div>
+      <div class="col-12">
+        <label class="form-label" for="{{ form.notes.id_for_label }}">{{ form.notes.label }}</label>
+        {{ form.notes|add_class:"form-control" }}
+      </div>
+    </div>
+  </div></div>
+
+  <div class="d-flex gap-2">
+    <button class="btn btn-primary btn-lg" type="submit">Registrar</button>
+    <a class="btn btn-outline-secondary btn-lg" href="{% url 'catalog:consumable_list' %}">Cancelar</a>
+  </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("alpine:init", function () {
+  Alpine.data("consumableOperation", function (initialType) {
+    var consumables = JSON.parse(document.getElementById("consumables-data").textContent);
+    var lines = JSON.parse(document.getElementById("lines-data").textContent);
+    function find(id) { return consumables.find(function (c) { return String(c.id) === String(id); }); }
+    return {
+      type: initialType, consumables: consumables, lines: lines,
+      exceeds: function (line) {
+        var c = find(line.consumable_id), q = parseInt(line.quantity, 10);
+        return this.type === "saida" && c && q > c.balance;
+      },
+      hint: function (line) {
+        var c = find(line.consumable_id), q = parseInt(line.quantity, 10);
+        if (!c || isNaN(q)) { return ""; }
+        var sign = { entrada: 1, devolucao: 1, saida: -1, ajuste: 1 }[this.type] || 0;
+        return "fica " + (c.balance + sign * q);
+      }
+    };
+  });
+});
+</script>
+{% endblock %}

@@ -53,3 +53,21 @@
 
 .login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; background: var(--app-sidebar); }
 .login-card { width: 100%; max-width: 400px; }
+
+.app-sidebar .offcanvas-body { overflow-y: auto; }
+.scanner-view { width: 100%; min-height: 260px; background: #111; border-radius: .5rem; overflow: hidden; }
+.badge-status-disponivel { background: #198754; }
+.badge-status-em_uso { background: #0d6efd; }
+.badge-status-emprestado { background: #6f42c1; }
+.badge-status-manutencao { background: #fd7e14; }
+.badge-status-baixado { background: #6c757d; }
+.row-critical td { background: #fff3cd !important; }
+.row-empty td { background: #f8d7da !important; }
+.item-card { border-left: 4px solid #0d6efd; }
+.item-card.item-invalid { border-left-color: #dc3545; background: #fff5f5; }
+.timeline { list-style: none; padding-left: 0; margin: 0; }
+.timeline li { position: relative; padding: 0 0 1rem 1.25rem; border-left: 2px solid #dee2e6; margin-left: .4rem; }
+.timeline li::before { content: ""; position: absolute; left: -7px; top: .3rem; width: 12px; height: 12px; border-radius: 50%; background: #0d6efd; }
+.timeline li.reversed::before { background: #adb5bd; }
+
+[x-cloak] { display: none !important; }

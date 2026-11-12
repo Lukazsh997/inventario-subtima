@@ -19,12 +19,27 @@ class Capability(StrEnum):
     SECTORS_MANAGE = "sectors.manage"  # cadastrar e editar setores e locais
     USERS_MANAGE = "users.manage"  # gerenciar usuários do sistema
     AUDIT_VIEW = "audit.view"  # consultar a auditoria
+    INVENTORY_VIEW = "inventory.view"  # consultar equipamentos, consumíveis e movimentações
+    CATALOG_MANAGE = "catalog.manage"  # cadastrar e editar equipamentos e consumíveis
+    CATEGORIES_MANAGE = "categories.manage"  # cadastrar e editar categorias
+    INVENTORY_OPERATE = "inventory.operate"  # registrar entradas, saídas, transferências etc.
+    STOCK_ADJUST = "stock.adjust"  # ajuste de estoque de consumíveis
+    EQUIPMENT_WRITE_OFF = "equipment.write_off"  # baixa definitiva de equipamento
+    OPERATION_REVERSE = "operation.reverse"  # estorno de operação
 
 
 ROLE_CAPABILITIES: dict[str, frozenset[Capability]] = {
     Role.ADMIN: frozenset(Capability),
-    Role.TECHNICIAN: frozenset({Capability.ORG_VIEW, Capability.RECIPIENTS_MANAGE}),
-    Role.VIEWER: frozenset({Capability.ORG_VIEW}),
+    Role.TECHNICIAN: frozenset(
+        {
+            Capability.ORG_VIEW,
+            Capability.RECIPIENTS_MANAGE,
+            Capability.INVENTORY_VIEW,
+            Capability.CATALOG_MANAGE,
+            Capability.INVENTORY_OPERATE,
+        }
+    ),
+    Role.VIEWER: frozenset({Capability.ORG_VIEW, Capability.INVENTORY_VIEW}),
 }
 
 

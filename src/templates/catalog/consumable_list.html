@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Materiais de consumo{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Materiais de consumo</h1>
+  <div class="d-flex flex-wrap gap-2">
+    {% if "inventory.operate" in caps %}
+    <a class="btn btn-outline-primary" href="{% url 'inventory:consumable_operation' %}?tipo=entrada"><i class="bi bi-box-arrow-in-down"></i> Entrada</a>
+    <a class="btn btn-primary" href="{% url 'inventory:consumable_operation' %}?tipo=saida"><i class="bi bi-cart-dash"></i> Retirada</a>
+    {% endif %}
+    {% if "catalog.manage" in caps %}<a class="btn btn-outline-secondary" href="{% url 'catalog:consumable_create' %}"><i class="bi bi-plus-lg"></i> Novo material</a>{% endif %}
+  </div>
+</div>
+<form class="row g-2 mb-3" method="get">
+  <div class="col-12 col-lg-4"><input class="form-control" type="search" name="q" value="{{ request.GET.q }}" placeholder="Nome, código ou impressora compatível" aria-label="Buscar"></div>
+  <div class="col-6 col-lg-3">
+    <select name="categoria" class="form-select" aria-label="Categoria" onchange="this.form.submit()">
+      <option value="">Todas as categorias</option>
+      {% for c in categories %}<option value="{{ c.pk }}" {% if request.GET.categoria == c.pk|stringformat:"d" %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-6 col-lg-3">
+    <select name="situacao" class="form-select" aria-label="Situação do estoque" onchange="this.form.submit()">
+      <option value="">Qualquer saldo</option>
+      <option value="critico" {% if request.GET.situacao == "critico" %}selected{% endif %}>No mínimo ou abaixo</option>
+      <option value="zerado" {% if request.GET.situacao == "zerado" %}selected{% endif %}>Sem estoque</option>
+    </select>
+  </div>
+  <div class="col-12 col-lg-2">{% include "components/status_filter.html" %}</div>
+</form>
+<div class="table-responsive">
+<table class="table table-app table-hover border rounded mb-0">
+  <thead><tr><th>Material</th><th class="d-none d-md-table-cell">Categoria</th><th class="text-end">Saldo</th><th class="text-end">Mínimo</th><th class="d-none d-lg-table-cell">Compatível com</th>{% if "inventory.operate" in caps %}<th></th>{% endif %}</tr></thead>
+  <tbody>
+  {% for c in page %}
+    {% with qty=c.balance.quantity %}
+    <tr class="{% if qty == 0 %}row-empty{% elif c.min_stock and qty <= c.min_stock %}row-critical{% endif %}">
+      <td><a href="{% url 'catalog:consumable_detail' c.pk %}">{{ c.name }}</a>{% if c.reference %}<div class="small text-secondary">{{ c.reference }}</div>{% endif %}{% if not c.active %} <span class="badge text-bg-secondary">inativo</span>{% endif %}</td>
+      <td class="d-none d-md-table-cell">{{ c.category }}</td>
+      <td class="text-end fw-semibold">{{ qty }} <span class="fw-normal small">{{ c.get_unit_display }}</span>{% if qty == 0 %}<div><span class="badge text-bg-danger">sem estoque</span></div>{% elif c.min_stock and qty <= c.min_stock %}<div><span class="badge text-bg-warning">crítico</span></div>{% endif %}</td>
+      <td class="text-end">{{ c.min_stock }}</td>
+      <td class="d-none d-lg-table-cell small">{{ c.compatibility|default:"—" }}</td>
+      {% if "inventory.operate" in caps %}<td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{% url 'inventory:consumable_operation' %}?tipo=saida&material={{ c.pk }}">Retirar</a></td>{% endif %}
+    </tr>
+    {% endwith %}
+  {% empty %}
+    <tr><td colspan="6" class="text-center text-secondary py-4">Nenhum material encontrado.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% include "components/pagination.html" %}
+{% endblock %}
