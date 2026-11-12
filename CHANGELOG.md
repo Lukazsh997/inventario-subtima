@@ -18,6 +18,9 @@ Fase 5 (termos e documentos).
 - Página "Termos" com filtros (situação, pendentes de assinatura, modelo) e o relatório "Documentos e termos emitidos" (11º relatório).
 - 15 testes novos (137 no total). Conferem o texto dos PDFs gerados contra os originais.
 
+### Corrigido
+- O termo mostrava "Prefeitura Municipal de Duque de Caxias" no lugar da secretaria quando a Prefeitura estava cadastrada como setor principal. Agora o termo usa a secretaria mais próxima do setor (o primeiro nível cujo nome começa com "Secretaria"). Sem secretaria na hierarquia, usa o nível logo abaixo da Prefeitura ou o próprio setor.
+
 ## [0.3.0] - 2026-11-12
 
 Fase 4 (painel, alertas e relatórios).

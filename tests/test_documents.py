@@ -319,3 +319,46 @@ def test_issued_documents_report(admin_user, paper_exit):
     services.issue(actor=admin_user, operation=paper_exit)
     result = REPORTS["termos-emitidos"].run({"situacao": "pendentes"})
     assert len(result.rows) == 1 and result.rows[0]["recebedor"] == "Joana Pereira (mat. 12345)"
+
+
+@pytest.mark.parametrize(
+    ("tree", "expected"),
+    [
+        # Prefeitura cadastrada como setor principal: nunca deve aparecer no lugar da secretaria
+        (
+            ["Prefeitura Municipal de Duque de Caxias", "Secretaria Municipal de Urbanismo", "Departamento de Obras"],
+            "Secretaria Municipal de Urbanismo",
+        ),
+        (["Prefeitura Municipal de Duque de Caxias", "Secretaria Municipal de Saúde"], "Secretaria Municipal de Saúde"),
+        # Secretaria dentro de secretaria: vale a mais próxima do setor
+        (
+            ["Secretaria Municipal de Governo", "Subsecretaria de TI", "Secretaria Executiva", "Suporte"],
+            "Secretaria Executiva",
+        ),
+        # Sem nenhuma "Secretaria" na cadeia: usa o nível abaixo da Prefeitura, ou o topo
+        (["Prefeitura Municipal de Duque de Caxias", "Gabinete do Prefeito", "Protocolo"], "Gabinete do Prefeito"),
+        (["Departamento de Saneamento"], "Departamento de Saneamento"),
+        (["DESANS", "Almoxarifado"], "DESANS"),
+    ],
+)
+def test_secretariat_shown_in_terms(admin_user, tree, expected):
+    parent = None
+    for name in tree:
+        parent = org.save_sector(actor=admin_user, sector=None, name=name, parent=parent)
+    assert rendering.secretariat_of(parent) == expected
+
+
+def test_receipt_shows_secretariat_not_city_hall(admin_user):
+    city = org.save_sector(actor=admin_user, sector=None, name="Prefeitura Municipal de Duque de Caxias")
+    smu = org.save_sector(actor=admin_user, sector=None, name="Secretaria Municipal de Urbanismo", parent=city)
+    dept = org.save_sector(actor=admin_user, sector=None, name="Departamento de Projetos", parent=smu)
+    paper = f.consumable(admin_user, name="Papel A4", initial=5)
+    op = inventory.move_consumables(
+        actor=admin_user,
+        op_type=T.EXIT,
+        lines=[(paper, 1)],
+        data=OperationData(destination_sector=dept, recipient=f.recipient(dept, "Ana")),
+    )
+    text = " ".join(pdf_text(bytes(services.issue(actor=admin_user, operation=op).pdf)).split())
+    assert "da Secretaria Municipal de Urbanismo declaro ter recebido" in text
+    assert "da Prefeitura Municipal" not in text

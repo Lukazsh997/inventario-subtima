@@ -85,6 +85,8 @@ Nenhuma operação é apagada ou editada. Para corrigir, o **administrador** abr
 
 O número do termo e o da operação saem em letra pequena no rodapé, para localizar no sistema a via em papel.
 
+**Qual secretaria aparece no termo:** a mais próxima do setor de destino (ou de origem), ou seja, o primeiro nível da hierarquia de setores cujo nome começa com "Secretaria". Por isso, cadastre os departamentos *dentro* da secretaria a que pertencem. Se não houver secretaria acima, o termo mostra o nível logo abaixo da Prefeitura ou o próprio setor.
+
 ### Modelos de termo (administrador)
 
 - Disponíveis hoje: **Termo de Transferência** (transferência de equipamentos) e **Termo de Recebimento de Resmas** (saída de materiais), reproduzidos dos arquivos do órgão.

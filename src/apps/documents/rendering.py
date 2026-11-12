@@ -51,14 +51,33 @@ def long_date(value: date) -> str:
     return f"{value.day:02d} de {MONTHS[value.month - 1]} de {value.year}"
 
 
+def secretariat_of(sector) -> str:
+    """Secretaria a que o setor pertence, para frases como "da Secretaria Municipal de Urbanismo".
+
+    Sobe a hierarquia a partir do próprio setor e usa o primeiro nível cujo nome começa
+    com "Secretaria". Se não houver, usa o nível logo abaixo do topo, ignorando um topo
+    que represente a Prefeitura inteira; em último caso, o próprio setor. Assim o termo
+    nunca mostra "Prefeitura Municipal de ..." no lugar da secretaria ou do setor.
+    """
+    chain, node, seen = [], sector, set()
+    while node is not None and node.pk not in seen:
+        chain.append(node)
+        seen.add(node.pk)
+        node = node.parent
+    for item in chain:
+        if item.name.strip().lower().startswith("secretaria"):
+            return item.name
+    top = chain[-1]
+    if top.name.strip().lower().startswith("prefeitura"):
+        return chain[-2].name if len(chain) > 1 else sector.name
+    return top.name
+
+
 def _sector_parts(sector) -> dict:
     if sector is None:
         return {"nome": "", "sigla": "", "rotulo": "", "secretaria": ""}
-    root = sector
-    while root.parent_id is not None:
-        root = root.parent
     label = f"{sector.name} / {sector.acronym}" if sector.acronym else sector.name
-    return {"nome": sector.name, "sigla": sector.acronym, "rotulo": label, "secretaria": root.name}
+    return {"nome": sector.name, "sigla": sector.acronym, "rotulo": label, "secretaria": secretariat_of(sector)}
 
 
 def _person(recipient) -> dict:
