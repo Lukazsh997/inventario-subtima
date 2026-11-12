@@ -39,6 +39,7 @@ SITE_ADDRESS=patrimonio.intranet.local, 10.0.0.10   # nomes/IPs digitados no nav
 ALLOWED_HOSTS=patrimonio.intranet.local,10.0.0.10   # os mesmos
 USE_HTTPS=true
 TLS_CERT=internal
+DEFAULT_SNI=10.0.0.10                               # IP do servidor (acesso por https://IP)
 APP_BIND=127.0.0.1                                  # fecha a porta 8000 para a rede
 ```
 
@@ -56,6 +57,8 @@ Depois, recrie a stack (Portainer: *Update the stack* com *Re-pull/rebuild*; ter
 | Sintoma | Verificar |
 |---|---|
 | `ERR_CONNECTION_REFUSED` | O container `proxy` está rodando? (`docker compose ps`; logs do `proxy`). Outra aplicação já usa a porta 80/443 no servidor? Use `HTTP_PORT`/`HTTPS_PORT` para trocar. Firewall do servidor liberando 80 e 443. |
+| `ERR_SSL_PROTOCOL_ERROR` ou conexão encerrada ao abrir pelo IP | `DEFAULT_SNI` deve ser o IP do servidor. |
+| HTTP também não abre | Normal com `APP_BIND=127.0.0.1`: a porta 8000 fica fechada e o `http://` manda para o HTTPS. Para voltar temporariamente ao HTTP: `APP_BIND=0.0.0.0` e `USE_HTTPS=false`, e acesse `http://<servidor>:8000`. |
 | Bad Request (400) | O nome digitado não está em `ALLOWED_HOSTS`. |
 | Aviso de certificado | Certificado raiz não instalado naquele aparelho, ou o nome digitado não está em `SITE_ADDRESS`. |
 | 502 | O `app` não está saudável (logs do `app`). |

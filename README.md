@@ -72,6 +72,7 @@ Material recebido do órgão (etiquetas, modelos de termo, toners): [docs/refere
 | `USE_HTTPS` | | `false` | `true` atrás de proxy HTTPS (cookies seguros) |
 | `SECURE_SSL_REDIRECT` / `SECURE_HSTS_SECONDS` | | `false` / `0` | Com HTTPS: redirecionar HTTP→HTTPS e enviar HSTS |
 | `SITE_ADDRESS` | com HTTPS | `localhost` | Nomes/IPs atendidos pelo proxy HTTPS |
+| `DEFAULT_SNI` | acesso por IP | `localhost` | IP do servidor, para `https://IP` funcionar |
 | `TLS_CERT` / `CERTS_PATH` | | `internal` / — | Certificado gerado pelo sistema ou o do órgão |
 | `HTTP_PORT` / `HTTPS_PORT` / `APP_BIND` | | `80` / `443` / `0.0.0.0` | Portas do proxy; `APP_BIND=127.0.0.1` fecha a porta 8000 |
 | `FORWARDED_ALLOW_IPS` | com proxy | `127.0.0.1` | IP do proxy reverso confiável |

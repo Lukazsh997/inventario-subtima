@@ -6,6 +6,8 @@
 	admin off
 	auto_https disable_redirects
 	skip_install_trust
+	# Acesso pelo IP (https://10.20.21.80): o navegador não envia o nome (SNI); este é o certificado usado.
+	default_sni {$DEFAULT_SNI:localhost}
 	servers {
 		trusted_proxies static private_ranges
 	}
