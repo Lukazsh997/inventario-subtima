@@ -548,6 +548,66 @@ class EquipmentHistory(Report):
         )
 
 
+class IssuedDocuments(Report):
+    slug = "termos-emitidos"
+    title = "Documentos e termos emitidos"
+    description = "Termos gerados no período, com situação, operação e recebedor."
+    filters = ("periodo", "setor", "situacao")
+
+    @property
+    def situation_choices(self):
+        from apps.documents.models import DocumentStatus
+
+        return [("pendentes", "Pendentes (sem assinatura)"), *DocumentStatus.choices]
+
+    def run(self, params):
+        from apps.documents.models import DocumentStatus, GeneratedDocument
+
+        docs = (
+            GeneratedDocument.objects.defer("pdf")
+            .select_related(
+                "template", "issued_by", "operation", "operation__recipient", "operation__destination_sector"
+            )
+            .order_by("-issued_at")
+        )
+        docs = self.period_filter(docs, params, "issued_at")
+        if params.get("setor"):
+            docs = docs.filter(operation__destination_sector=params["setor"])
+        status = params.get("situacao")
+        if status == "pendentes":
+            docs = docs.filter(status__in=[DocumentStatus.GENERATED, DocumentStatus.PRINTED, DocumentStatus.AWAITING])
+        elif status:
+            docs = docs.filter(status=status)
+        rows = [
+            {
+                "termo": d.number,
+                "emitido": fmt_date(d.issued_at),
+                "modelo": f"{d.template.name} v{d.template.version}",
+                "operacao": d.operation.number,
+                "setor": sector_label(d.operation.destination_sector),
+                "recebedor": str(d.operation.recipient or ""),
+                "situacao": d.get_status_display(),
+                "por": d.issued_by.full_name,
+            }
+            for d in docs
+        ]
+        pending = sum(1 for r in rows if r["situacao"] in ("Gerado", "Impresso", "Aguardando assinatura"))
+        return ReportResult(
+            columns=[
+                Column("termo", "Termo"),
+                Column("emitido", "Emitido em"),
+                Column("modelo", "Modelo"),
+                Column("operacao", "Operação"),
+                Column("setor", "Setor"),
+                Column("recebedor", "Recebedor"),
+                Column("situacao", "Situação"),
+                Column("por", "Emitido por"),
+            ],
+            rows=rows,
+            summary=[f"{len(rows)} termos", f"{pending} sem assinatura registrada"],
+        )
+
+
 REPORTS: dict[str, Report] = {
     r.slug: r
     for r in [
@@ -561,5 +621,6 @@ REPORTS: dict[str, Report] = {
         LoanedEquipment(),
         MaintenanceEquipment(),
         EquipmentHistory(),
+        IssuedDocuments(),
     ]
 }

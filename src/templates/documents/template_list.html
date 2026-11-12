@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Modelos de termo{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="small text-secondary"><a href="{% url 'documents:list' %}">Termos</a></div>
+    <h1>Modelos de termo</h1>
+  </div>
+  {% if "templates.manage" in caps %}<a class="btn btn-primary" href="{% url 'documents:template_create' %}"><i class="bi bi-plus-lg"></i> Novo modelo</a>{% endif %}
+</div>
+<div class="alert alert-light border small">
+  Cada modelo vale para alguns tipos de operação. Editar cria uma <strong>nova versão</strong>: os termos já emitidos continuam ligados à versão com que foram gerados. O texto institucional deve vir dos modelos oficiais do órgão; registre a origem em cada versão.
+</div>
+<div class="table-responsive mb-4">
+<table class="table table-app border rounded mb-0">
+  <thead><tr><th>Modelo</th><th>Versão</th><th>Usado em</th><th class="d-none d-lg-table-cell">Origem do texto</th><th>Situação</th><th class="text-end">Ações</th></tr></thead>
+  <tbody>
+  {% for t in templates %}
+  <tr class="{% if not t.active %}row-inactive{% endif %}">
+    <td>{{ t.name }}</td>
+    <td>v{{ t.version }}<div class="small text-secondary">{{ t.created_at|date:"d/m/Y" }}{% if t.created_by %} · {{ t.created_by.full_name }}{% endif %}</div></td>
+    <td class="small">{{ t.get_item_kind_display }}: {{ t.operation_type_labels }}</td>
+    <td class="d-none d-lg-table-cell small">{{ t.source|default:"—" }}</td>
+    <td>{% if t.active %}<span class="badge text-bg-success">ativa</span>{% else %}<span class="badge text-bg-secondary">inativa</span>{% endif %}</td>
+    <td class="text-end text-nowrap">
+      <a class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener" href="{% url 'documents:template_preview' t.pk %}" title="Pré-visualizar com a última operação real desse tipo">Prévia</a>
+      {% if "templates.manage" in caps %}
+        {% if t.active %}<a class="btn btn-sm btn-outline-primary" href="{% url 'documents:template_edit' t.pk %}">Nova versão</a>{% endif %}
+        <a class="btn btn-sm btn-outline-secondary" href="{% url 'documents:template_create' %}?copiar={{ t.pk }}" title="Criar outro modelo a partir deste layout">Copiar layout</a>
+        <form class="d-inline" method="post" action="{% url 'documents:template_toggle' t.pk %}">{% csrf_token %}<button class="btn btn-sm btn-link" type="submit">{% if t.active %}Desativar{% else %}Reativar{% endif %}</button></form>
+      {% endif %}
+    </td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+<h2 class="h5">Imagens usadas nos termos</h2>
+<div class="row g-3">
+  {% for a in assets %}
+  <div class="col-12 col-md-6 col-xl-4"><div class="card h-100"><div class="card-body d-flex align-items-center gap-3">
+    <img src="{% url 'documents:asset_image' a.key %}" alt="{{ a.name }}" style="max-height:64px; max-width:160px">
+    <div class="flex-grow-1"><div class="fw-semibold">{{ a.name }}</div><div class="small text-secondary"><code>{% templatetag openvariable %} imagens.{{ a.key }} {% templatetag closevariable %}</code></div></div>
+    {% if "templates.manage" in caps %}<a class="btn btn-sm btn-outline-primary" href="{% url 'documents:asset_upload' a.key %}">Substituir</a>{% endif %}
+  </div></div></div>
+  {% endfor %}
+</div>
+{% endblock %}

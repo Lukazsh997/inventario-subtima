@@ -488,4 +488,5 @@ def reverse_operation(*, actor, operation: StockOperation, justification: str) -
         events.publish(
             events.CONSUMABLES_CHANGED, consumable_ids=sorted({m.consumable_id for m in consumable_movements})
         )
+    events.publish(events.OPERATION_REVERSED, operation=operation, reversal=reversal, actor=actor)
     return reversal

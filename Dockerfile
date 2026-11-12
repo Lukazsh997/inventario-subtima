@@ -39,7 +39,7 @@ RUN useradd --uid 1000 --create-home --shell /usr/sbin/nologin app \
 WORKDIR /app/src
 RUN DEBUG=false SECRET_KEY=build-only LOG_TO_FILE=false python manage.py collectstatic --noinput
 
-ARG APP_VERSION=0.3.0
+ARG APP_VERSION=0.4.0
 ENV APP_VERSION=${APP_VERSION} \
     DATA_DIR=/data \
     BACKUP_DIR=/backups

@@ -74,6 +74,7 @@ class OperationForm(DestinationForm):
     third_party = forms.CharField(label="Assistência técnica / fornecedor", max_length=150, required=False)
     justification = forms.CharField(label="Justificativa", required=False, widget=forms.Textarea(attrs={"rows": 2}))
     notes = forms.CharField(label="Observações", required=False, widget=forms.Textarea(attrs={"rows": 2}))
+    generate_document = forms.BooleanField(label="Gerar o termo em PDF ao registrar", required=False, initial=True)
 
     allowed_types: list = []
 

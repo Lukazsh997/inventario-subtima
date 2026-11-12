@@ -9,6 +9,7 @@ from collections import defaultdict
 from collections.abc import Callable
 
 CONSUMABLES_CHANGED = "consumables_changed"  # payload: consumable_ids: list[int]
+OPERATION_REVERSED = "operation_reversed"  # payload: operation, reversal, actor
 
 _subscribers: dict[str, list[Callable]] = defaultdict(list)
 

@@ -74,3 +74,20 @@ Nenhuma operação é apagada ou editada. Para corrigir, o **administrador** abr
 - **Materiais críticos:** um material entra em alerta quando o saldo **atinge ou fica abaixo do estoque mínimo**. Só materiais com mínimo maior que zero geram alerta, então configure o mínimo em *Materiais de consumo → Editar*. O alerta registra quando a condição foi identificada e fecha sozinho quando o saldo volta acima do mínimo. O número ao lado do menu mostra quantos estão abertos. A sugestão de compra cobre a volta ao mínimo mais 3 meses do consumo médio recente.
 - **"Materiais sem estoque"** no painel conta todos os materiais ativos com saldo 0, inclusive os que nunca tiveram entrada.
 - **Relatórios:** escolha o relatório, aplique os filtros e use **PDF** (A4, para imprimir ou arquivar) ou **CSV** (abre direto no Excel ou no LibreOffice). O relatório *Histórico individual de equipamento* aceita a leitura da etiqueta no campo de busca.
+
+## Termos
+
+1. Ao registrar uma saída, transferência etc., deixe marcado **"Gerar o termo em PDF ao registrar"**. A operação abre com o termo pronto; clique em **Imprimir**.
+2. Entregue o termo impresso ao requisitante, que confere e assina. A TI guarda a via assinada.
+3. No termo (menu **Termos** ou pela operação), atualize a situação: *Aguardando assinatura → Assinado e recebido pela TI → Arquivado*. O filtro **Pendentes** lista o que ainda não voltou assinado.
+4. **Reimprimir** sempre gera o mesmo PDF emitido. **Reemitir** cancela o termo e gera outro número, por exemplo depois de atualizar o modelo.
+5. Se a operação for estornada, o termo é cancelado automaticamente.
+
+O número do termo e o da operação saem em letra pequena no rodapé, para localizar no sistema a via em papel.
+
+### Modelos de termo (administrador)
+
+- Disponíveis hoje: **Termo de Transferência** (transferência de equipamentos) e **Termo de Recebimento de Resmas** (saída de materiais), reproduzidos dos arquivos do órgão.
+- **Saída, empréstimo e devolução de equipamento** ainda não têm modelo, porque o Termo de Responsabilidade oficial ainda não foi fornecido. Essas operações funcionam normalmente; só não geram PDF. Quando o modelo chegar, cadastre-o em *Termos → Modelos de termo → Novo modelo* (ou use **Copiar layout** do Termo de Transferência) e informe a origem do texto.
+- Editar um modelo cria uma nova versão. Os termos antigos continuam com a versão com que foram emitidos.
+- Brasão e logotipo podem ser trocados por arquivos de melhor resolução em *Modelos de termo → Imagens*.

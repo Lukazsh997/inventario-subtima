@@ -25,6 +25,8 @@ BACKUP_DIR = Path(env_str("BACKUP_DIR", str(BASE_DIR.parent / "backups")))
 
 ORG_NAME = env_str("ORG_NAME", "Prefeitura Municipal")
 ORG_UNIT_NAME = env_str("ORG_UNIT_NAME", "Setor de Tecnologia da Informação")
+# Cidade usada na data por extenso dos termos ("Duque de Caxias, 04 de maio de 2025")
+DOC_CITY = env_str("DOC_CITY", "Duque de Caxias")
 APP_VERSION = env_str("APP_VERSION", "dev")
 
 INSTALLED_APPS = [
@@ -43,6 +45,7 @@ INSTALLED_APPS = [
     "apps.alerts",
     "apps.dashboard",
     "apps.reports",
+    "apps.documents",
 ]
 
 MIDDLEWARE = [
@@ -178,6 +181,8 @@ LOGGING = {
     "root": {"handlers": list(_handlers), "level": LOG_LEVEL},
     "loggers": {
         "django.db.backends": {"level": "WARNING"},
+        "fontTools": {"level": "WARNING"},
+        "weasyprint": {"level": "WARNING"},
     },
 }
 

@@ -4,7 +4,7 @@ Sistema web de gestão de patrimônio e estoque de TI: equipamentos identificado
 
 Desenvolvido para a Subsecretaria de Tecnologia da Informação e Modernização Administrativa (SUBTIMA) da Prefeitura Municipal de Duque de Caxias. Roda inteiramente na rede interna, em Docker, apenas com software livre.
 
-## Situação atual: versão 0.3.0 (Fase 4: painel, alertas e relatórios)
+## Situação atual: versão 0.4.0 (Fase 5: termos e documentos)
 
 | Módulo | Situação |
 |---|---|
@@ -20,7 +20,9 @@ Desenvolvido para a Subsecretaria de Tecnologia da Informação e Modernização
 | Painel com indicadores, 6 gráficos e filtros por período, categoria e setor | pronto |
 | Alertas de estoque mínimo (registro, sem duplicatas, encerramento automático) e página de materiais críticos | pronto |
 | 10 relatórios com filtros e exportação em PDF (A4) e CSV | pronto |
-| Termos em PDF a partir dos modelos institucionais | Fase 5 |
+| Termos em PDF a partir dos modelos institucionais, gerados automaticamente na operação | pronto (Transferência e Recebimento de Resmas) |
+| Termo de Responsabilidade (saída/empréstimo/devolução de equipamento) | aguardando o modelo oficial do órgão |
+| Ciclo de vida do termo (gerado → impresso → aguardando assinatura → assinado → arquivado / cancelado) | pronto |
 
 Guia de uso para a equipe: [docs/operacao.md](docs/operacao.md).
 
@@ -34,6 +36,8 @@ Guia de uso para a equipe: [docs/operacao.md](docs/operacao.md).
 | Saídas, transferências, devoluções, empréstimos, manutenção, entradas de material | ✓ | ✓ | |
 | Baixa de equipamento, ajuste de estoque, estorno | ✓ | | |
 | Categorias, setores e locais | ✓ | | |
+| Gerar, imprimir e atualizar a situação dos termos | ✓ | ✓ | |
+| Modelos de termo e imagens dos documentos | ✓ | | |
 | Gerenciar usuários, consultar auditoria | ✓ | | |
 
 As permissões são verificadas nos serviços, e não apenas na interface. O mapa fica em `src/apps/accounts/permissions.py`.
@@ -62,9 +66,10 @@ Material recebido do órgão (etiquetas, modelos de termo, toners): [docs/refere
 | `CSRF_TRUSTED_ORIGINS` | com HTTPS | — | Ex.: `https://patrimonio.intranet.local` |
 | `USE_HTTPS` | | `false` | `true` atrás de proxy HTTPS (cookies seguros) |
 | `FORWARDED_ALLOW_IPS` | com proxy | `127.0.0.1` | IP do proxy reverso confiável |
-| `APP_VERSION` / `APP_PORT` | | `0.3.0` / `8000` | Tag da imagem e porta publicada |
+| `APP_VERSION` / `APP_PORT` | | `0.4.0` / `8000` | Tag da imagem e porta publicada |
 | `ORG_NAME` / `ORG_UNIT_NAME` | | genéricos | Nome do órgão e da unidade (tela e documentos) |
 | `TIME_ZONE` | | `America/Sao_Paulo` | Fuso horário |
+| `DOC_CITY` | | `Duque de Caxias` | Cidade na data por extenso dos termos |
 | `SESSION_TIMEOUT_MINUTES` | | `480` | Sessão expira após inatividade |
 | `LOGIN_MAX_FAILURES` / `LOGIN_LOCK_MINUTES` | | `5` / `15` | Bloqueio temporário após falhas de login |
 | `PASSWORD_MIN_LENGTH` | | `10` | Tamanho mínimo de senha |
@@ -89,6 +94,7 @@ src/
 │   ├── alerts/        alertas de estoque mínimo (reagem a eventos de estoque)
 │   ├── dashboard/     painel: indicadores e séries dos gráficos
 │   ├── reports/       relatórios (tela, CSV e PDF a partir da mesma definição)
+│   ├── documents/     modelos de termo versionados, emissão do PDF, situação do termo
 │   └── audit/         auditoria somente-inserção
 ├── templates/         layout base e componentes reutilizáveis
 └── static/            CSS/JS do sistema e bibliotecas locais

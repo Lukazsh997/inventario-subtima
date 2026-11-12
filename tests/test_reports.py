@@ -58,7 +58,7 @@ def _run(slug, **params):
 def test_all_reports_listed(client_for, viewer_user):
     page = client_for(viewer_user).get(reverse("reports:index")).content.decode()
     assert all(r.title in page for r in REPORTS.values())
-    assert len(REPORTS) == 10
+    assert len(REPORTS) == 11
 
 
 def test_current_stock_and_below_minimum(data):

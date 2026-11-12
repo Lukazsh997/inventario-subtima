@@ -84,6 +84,12 @@
         <label class="form-label" for="{{ form.notes.id_for_label }}">{{ form.notes.label }}</label>
         {{ form.notes|add_class:"form-control" }}
       </div>
+      <div class="col-12">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" name="generate_document" id="id_generate_document" {% if not form.is_bound or form.generate_document.value %}checked{% endif %}>
+          <label class="form-check-label" for="id_generate_document">Gerar o termo em PDF ao registrar <span class="text-secondary small">(usa o modelo configurado para o tipo de operação)</span></label>
+        </div>
+      </div>
     </div>
   </div></div>
 
