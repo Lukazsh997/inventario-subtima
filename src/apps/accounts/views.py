@@ -4,7 +4,7 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.http import url_has_allowed_host_and_scheme
-from django.views.decorators.http import require_http_methods, require_POST
+from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 from apps.core.listing import apply_search, paginate
 
@@ -66,6 +66,7 @@ def password_change(request):
 # --- Gestão de usuários (Administrador) ---------------------------------------------
 
 
+@require_GET
 @require_capability(Capability.USERS_MANAGE)
 def user_list(request):
     queryset = User.objects.select_related("sector")

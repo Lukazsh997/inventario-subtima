@@ -5,7 +5,7 @@
 <div class="page-header"><h1>Movimentar material de consumo</h1></div>
 {{ consumables|json_script:"consumables-data" }}
 {{ lines|json_script:"lines-data" }}
-<form method="post" novalidate x-data="consumableOperation('{{ op_type }}')">
+<form method="post" novalidate x-data="consumableOperation('{{ op_type|escapejs }}')">
   {% csrf_token %}
   {% if form.non_field_errors %}<div class="alert alert-danger">{% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}</div>{% endif %}
 

@@ -32,7 +32,7 @@ def _csv_safe(value):
 
 
 def to_pdf(report, result: ReportResult, *, filters: list[str], user) -> bytes:
-    from weasyprint import HTML  # importação tardia: carrega bibliotecas gráficas só quando precisa
+    from apps.core.pdf import html_to_pdf
 
     html = render_to_string(
         "reports/pdf.html",
@@ -46,4 +46,4 @@ def to_pdf(report, result: ReportResult, *, filters: list[str], user) -> bytes:
             "ORG_UNIT_NAME": settings.ORG_UNIT_NAME,
         },
     )
-    return HTML(string=html, base_url=str(settings.BASE_DIR)).write_pdf()
+    return html_to_pdf(html)

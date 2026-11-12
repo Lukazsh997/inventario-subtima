@@ -27,7 +27,7 @@ Os dados ficam todos em volumes nomeados. Recriar, atualizar ou reiniciar contai
 ### Portainer Stacks
 
 - **Opção recomendada:** *Stacks → Add stack → Repository*, apontando para o repositório Git. O Portainer faz o build pelo `Dockerfile`. Informe as variáveis em *Environment variables* ou carregue o `.env`.
-- **Alternativa:** faça o build da imagem no servidor (`docker build -t patrimonio-ti:0.1.0 .`) e cole o `docker-compose.yml` no *Web editor*. A seção `build` é ignorada quando a imagem já existe.
+- **Alternativa:** faça o build da imagem no servidor (`docker build -t patrimonio-ti:1.0.0-rc.1 .`) e cole o `docker-compose.yml` no *Web editor*. A seção `build` é ignorada quando a imagem já existe.
 
 ## HTTPS (necessário para a câmera do celular)
 
@@ -38,6 +38,8 @@ USE_HTTPS=true
 CSRF_TRUSTED_ORIGINS=https://patrimonio.intranet.local
 FORWARDED_ALLOW_IPS=<IP do proxy>
 ```
+
+Opcional, depois de confirmar que o HTTPS funciona em todos os computadores: `SECURE_SSL_REDIRECT=true` (manda quem acessar por HTTP para o HTTPS) e `SECURE_HSTS_SECONDS=31536000` (o navegador passa a recusar HTTP; difícil de desfazer, por isso deixe por último).
 
 O proxy precisa repassar `X-Forwarded-Proto` e `X-Forwarded-For`. O leitor USB funciona mesmo sem HTTPS.
 
@@ -51,4 +53,5 @@ O proxy precisa repassar `X-Forwarded-Proto` e `X-Forwarded-For`. O leitor USB f
 
 - `GET /health/` não exige login. Responde 200 quando o banco responde e o volume de dados aceita escrita; caso contrário, 503 com o detalhe. O `HEALTHCHECK` da imagem usa esse endpoint.
 - Logs em JSON, uma linha por evento, na saída padrão (visíveis no Portainer). O `app` também grava em `/data/logs/app.log`, com rotação a cada 10 MB e 10 arquivos.
+- `python manage.py verificar_implantacao` (dentro do container `app`) confere configuração, migrações, gatilhos do histórico, volumes, último backup, modelos de termo e geração de PDF. Veja [homologacao.md](homologacao.md).
 - A auditoria de negócio (quem fez o quê) fica no banco, no menu *Auditoria*.

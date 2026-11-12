@@ -6,7 +6,7 @@
 {{ items|json_script:"items-data" }}
 {{ rules|json_script:"rules-data" }}
 {{ accessories|json_script:"accessories-data" }}
-<form method="post" novalidate x-data="equipmentOperation('{{ op_type }}', '{% url 'catalog:equipment_lookup' %}')">
+<form method="post" novalidate x-data="equipmentOperation('{{ op_type|escapejs }}', '{% url 'catalog:equipment_lookup' %}')">
   {% csrf_token %}
   {% if form.non_field_errors %}<div class="alert alert-danger">{% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}</div>{% endif %}
 

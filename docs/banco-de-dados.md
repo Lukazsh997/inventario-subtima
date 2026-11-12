@@ -2,7 +2,7 @@
 
 PostgreSQL 17. O esquema é versionado por migrações do Django (`src/apps/*/migrations`) e nunca é alterado manualmente.
 
-## Tabelas (versão 0.4.0)
+## Tabelas (versão 1.0.0-rc.1)
 
 | Tabela | Conteúdo | Regras no banco |
 |---|---|---|

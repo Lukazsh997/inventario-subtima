@@ -2,6 +2,30 @@
 
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). Versões seguem [SemVer](https://semver.org/lang/pt-BR/).
 
+## [1.0.0-rc.1] - 2026-11-12
+
+Fase 6 (testes, segurança e homologação). Candidata à versão 1.0.
+
+### Adicionado
+- Importação de equipamentos por planilha CSV ou XLSX (Excel/LibreOffice), com modelo para baixar, prévia linha a linha dos problemas e gravação tudo-ou-nada. Serve para o inventário inicial, inclusive de equipamentos já em uso (setor e servidor atuais). Cada equipamento recebe sua operação de Entrada.
+- Comando `verificar_implantacao`: confere configuração (DEBUG, SECRET_KEY, ALLOWED_HOSTS), migrações, gatilhos do histórico imutável, volumes, último backup, modelos de termo e geração de PDF. Com `--json`/`--comparar`, prova que os dados sobreviveram à recriação dos containers.
+- `scripts/verificar-implantacao.sh`: teste completo de persistência no servidor (backup → instantâneo → `down`/`up` → comparação).
+- Cabeçalhos de segurança: Content-Security-Policy, Permissions-Policy e Cross-Origin-Resource-Policy.
+- Variáveis `SECURE_SSL_REDIRECT` e `SECURE_HSTS_SECONDS` (opcionais, com HTTPS).
+- Documentação: [docs/seguranca.md](docs/seguranca.md) e [docs/homologacao.md](docs/homologacao.md) (checklist de produção, teste de persistência e de restauração, reversão).
+- 28 testes novos (165 no total): segurança (XSS, login obrigatório em todas as rotas, perfil Consulta sem nenhum POST, cabeçalhos, cookies, PDF sem acesso a arquivos/rede), importação e verificação de implantação.
+
+### Corrigido
+- XSS refletido pelo parâmetro `?tipo=` das telas de operação.
+- Listas de usuários, setores e servidores aceitavam POST.
+
+### Segurança
+- WeasyPrint 66 → 70 (falhas publicadas de leitura de arquivos/acesso à rede e de execução do Ghostscript). A geração de PDF agora só aceita recursos `data:`.
+
+### Validado
+- Atualização da 0.1.0 para esta versão com dados: migrações aplicadas sem perda de usuários, senhas, setores, servidores e auditoria.
+- Desempenho com 2.500 equipamentos, 400 servidores e ~9 mil operações: páginas entre 12 e 160 ms, número de consultas constante, relatórios abaixo de 0,6 s, termo em PDF em ~1,2 s.
+
 ## [0.4.0] - 2026-11-12
 
 Fase 5 (termos e documentos).
