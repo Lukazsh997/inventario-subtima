@@ -2,7 +2,7 @@
 
 PostgreSQL 17. O esquema é versionado por migrações do Django (`src/apps/*/migrations`) e nunca é alterado manualmente.
 
-## Tabelas da versão 0.1.0
+## Tabelas (versão 0.2.0)
 
 | Tabela | Conteúdo | Regras no banco |
 |---|---|---|
@@ -10,6 +10,15 @@ PostgreSQL 17. O esquema é versionado por migrações do Django (`src/apps/*/mi
 | `organization_sector` | Secretarias, subsecretarias, departamentos; `parent_id` forma a hierarquia | Nome único sem diferenciar maiúsculas; não pode ser pai de si mesmo; exclusão bloqueada se houver vínculos (`PROTECT`) |
 | `organization_location` | Locais físicos (prédio, andar, sala) de um setor | Descrição única por setor |
 | `organization_recipient` | Servidores que recebem materiais e assinam termos (sem login) | Matrícula única quando informada |
+| `catalog_category` | Categorias, cada uma de um tipo: equipamento (controle individual) ou consumível (por quantidade) | Nome único por tipo |
+| `catalog_equipment` | Equipamentos: dados cadastrais, propriedade (próprio/locado), locadora, nº de série, patrimônio, código da locadora (ACES), situação, setor/local/responsável atuais | Série, patrimônio (comparado pelos dígitos) e código da locadora únicos; pelo menos um dos três obrigatório |
+| `catalog_consumable` | Materiais de consumo: nome, código do fabricante, unidade, estoque mínimo, compatibilidade | Nome e código únicos |
+| `inventory_stockbalance` | Saldo atual de cada consumível | `CHECK (quantidade >= 0)`; alterado só sob bloqueio de linha |
+| `inventory_stockoperation` | Operação: número `OP-AAAA-NNNNNN`, tipo, responsável, origem, destino, local, servidor recebedor, devolução prevista, assistência, justificativa, estorno de | **Imutável** (gatilhos rejeitam UPDATE/DELETE) |
+| `inventory_stockmovement` | Linhas da operação: equipamento (quantidade 1) **ou** consumível (quantidade com sinal), saldo após, situação/setor/responsável antes | **Imutável**; exatamente um item por linha |
+| `inventory_operationaccessory` | Acessórios entregues junto (carregador, bolsa…) | **Imutável** |
+| `inventory_equipmentassignment` | Períodos de uso, empréstimo e manutenção de cada equipamento | No máximo uma atribuição aberta por equipamento |
+| `core_numbersequence` | Contador anual dos números de operação | Incremento atômico (`INSERT … ON CONFLICT`) |
 | `audit_auditlog` | Auditoria: data, usuário, ação, entidade, resumo, alterações (JSON de/para), IP | **Somente inserção**: gatilhos rejeitam `UPDATE` e `DELETE` |
 
 As tabelas `auth_*`, `django_*` e `django_session` são internas do framework.
@@ -17,9 +26,10 @@ As tabelas `auth_*`, `django_*` e `django_session` são internas do framework.
 ## Princípios
 
 - **Desativar em vez de apagar:** setores, locais, servidores e usuários com histórico são desativados. As chaves estrangeiras usam `PROTECT`.
-- **Auditoria imutável:** a função `patrimonio_forbid_change()` também vai proteger as tabelas de movimentação na Fase 3.
+- **Histórico imutável:** a função `patrimonio_forbid_change()` protege auditoria, operações, movimentações e acessórios. Correções são feitas por estorno, uma nova operação ligada à original.
+- **Concorrência:** saídas bloqueiam as linhas de saldo e de equipamento (`SELECT … FOR UPDATE`, em ordem de id) até o fim da transação. Duas retiradas simultâneas do último item resultam em uma aprovada e uma recusada, o que é comprovado em teste com conexões paralelas.
 - **Toda escrita passa pelos serviços** (`apps/*/services.py`), que validam permissão, regras e auditoria dentro de uma transação.
 
 ## Próximas tabelas
 
-Categorias, equipamentos, consumíveis, saldos, operações e movimentações (Fase 3); alertas (Fase 4); modelos e termos gerados, com o PDF armazenado no próprio banco (Fase 5). O desenho completo está na proposta de arquitetura.
+Alertas de estoque mínimo (Fase 4); modelos e termos gerados, com o PDF armazenado no próprio banco (Fase 5).

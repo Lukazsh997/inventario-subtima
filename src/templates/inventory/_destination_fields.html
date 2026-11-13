@@ -1,0 +1,47 @@
+{% load ui %}
+{# Setor → local e servidor dependentes, com cadastro rápido de servidor. Espera "form" com os campos de DestinationForm. #}
+<div class="row g-3" x-data="destinationPicker({
+    url: '{% url 'inventory:sector_options' %}',
+    sector: '{{ form.destination_sector.value|default:'' }}',
+    recipient: '{{ form.recipient.value|default:'' }}',
+    location: '{{ form.destination_location.value|default:'' }}',
+    newName: '{{ form.new_recipient_name.value|default:''|escapejs }}'
+  })">
+  <div class="col-12 col-md-6">
+    <label class="form-label" for="{{ form.destination_sector.id_for_label }}">{{ form.destination_sector.label }}</label>
+    <select class="form-select" name="{{ form.destination_sector.html_name }}" id="{{ form.destination_sector.id_for_label }}" x-model="sector" @change="load()">
+      <option value="">— escolha —</option>
+      {% for s in form.fields.destination_sector.queryset %}<option value="{{ s.pk }}">{{ s }}</option>{% endfor %}
+    </select>
+    {% for e in form.destination_sector.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+  </div>
+  <div class="col-12 col-md-6">
+    <label class="form-label" for="{{ form.destination_location.id_for_label }}">{{ form.destination_location.label }} <span class="text-secondary small">(opcional)</span></label>
+    <select class="form-select" name="{{ form.destination_location.html_name }}" id="{{ form.destination_location.id_for_label }}" x-model="location" :disabled="!sector">
+      <option value="">— não informar —</option>
+      <template x-for="loc in locations" :key="loc.id"><option :value="loc.id" x-text="loc.label" :selected="String(loc.id) === String(location)"></option></template>
+    </select>
+  </div>
+  <div class="col-12 col-md-6">
+    <label class="form-label" for="{{ form.recipient.id_for_label }}">{{ form.recipient.label }}</label>
+    <select class="form-select" name="{{ form.recipient.html_name }}" id="{{ form.recipient.id_for_label }}" x-model="recipient" :disabled="!sector || creating">
+      <option value="">— escolha —</option>
+      <template x-for="r in recipients" :key="r.id"><option :value="r.id" x-text="r.label" :selected="String(r.id) === String(recipient)"></option></template>
+    </select>
+    <button type="button" class="btn btn-link btn-sm px-0" x-show="sector" @click="creating = !creating; recipient = ''" x-text="creating ? 'Escolher servidor já cadastrado' : '+ Servidor não está na lista'"></button>
+    {% for e in form.recipient.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+  </div>
+  <div class="col-12 col-md-6" x-show="creating" x-cloak>
+    <div class="row g-2">
+      <div class="col-8">
+        <label class="form-label" for="{{ form.new_recipient_name.id_for_label }}">{{ form.new_recipient_name.label }}</label>
+        <input class="form-control" type="text" name="{{ form.new_recipient_name.html_name }}" id="{{ form.new_recipient_name.id_for_label }}" x-model="newName" maxlength="200">
+      </div>
+      <div class="col-4">
+        <label class="form-label" for="{{ form.new_recipient_registration.id_for_label }}">{{ form.new_recipient_registration.label }}</label>
+        <input class="form-control" type="text" name="{{ form.new_recipient_registration.html_name }}" id="{{ form.new_recipient_registration.id_for_label }}" value="{{ form.new_recipient_registration.value|default:'' }}" maxlength="30">
+      </div>
+      <div class="col-12 form-text">O servidor é cadastrado no setor escolhido junto com a operação.</div>
+    </div>
+  </div>
+</div>

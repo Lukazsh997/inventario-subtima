@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Movimentações{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Movimentações</h1>
+  {% if "inventory.operate" in caps %}
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-primary" href="{% url 'inventory:equipment_operation' %}">Equipamento</a>
+    <a class="btn btn-outline-primary" href="{% url 'inventory:consumable_operation' %}">Material</a>
+  </div>
+  {% endif %}
+</div>
+<form class="row g-2 mb-3" method="get">
+  <div class="col-12 col-lg-4"><input class="form-control" type="search" name="q" value="{{ request.GET.q }}" placeholder="Número, servidor, setor, série, patrimônio, material" aria-label="Buscar"></div>
+  <div class="col-12 col-md-4 col-lg-3">
+    <select name="tipo" class="form-select" aria-label="Tipo" onchange="this.form.submit()">
+      <option value="">Todos os tipos</option>
+      {% for v, l in types %}<option value="{{ v }}" {% if request.GET.tipo == v %}selected{% endif %}>{{ l }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-6 col-md-3 col-lg-2"><input class="form-control" type="date" name="de" value="{{ request.GET.de }}" aria-label="De"></div>
+  <div class="col-6 col-md-3 col-lg-2"><input class="form-control" type="date" name="ate" value="{{ request.GET.ate }}" aria-label="Até"></div>
+  <div class="col-12 col-md-2 col-lg-1"><button class="btn btn-outline-secondary w-100" type="submit"><i class="bi bi-search"></i><span class="visually-hidden">Filtrar</span></button></div>
+</form>
+<div class="table-responsive">
+<table class="table table-app table-hover border rounded mb-0">
+  <thead><tr><th>Número</th><th>Data</th><th>Tipo</th><th class="d-none d-md-table-cell">Destino / recebedor</th><th class="d-none d-lg-table-cell">Por</th></tr></thead>
+  <tbody>
+  {% for op in page %}
+    <tr class="{% if op.is_reversed %}row-inactive{% endif %}">
+      <td><a href="{% url 'inventory:operation_detail' op.pk %}">{{ op.number }}</a>{% if op.is_reversed %} <span class="badge text-bg-secondary">estornada</span>{% endif %}</td>
+      <td class="text-nowrap">{{ op.performed_at|date:"d/m/Y H:i" }}</td>
+      <td>{{ op.get_type_display }}{% if op.reverses %}<div class="small text-secondary">de {{ op.reverses.number }}</div>{% endif %}</td>
+      <td class="d-none d-md-table-cell">{% firstof op.destination_sector.acronym op.destination_sector.name "—" %}{% if op.recipient %}<div class="small">{{ op.recipient.full_name }}</div>{% endif %}</td>
+      <td class="d-none d-lg-table-cell">{{ op.performed_by.full_name }}</td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="5" class="text-center text-secondary py-4">Nenhuma movimentação encontrada.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% include "components/pagination.html" %}
+{% endblock %}

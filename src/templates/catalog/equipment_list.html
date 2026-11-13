@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% load ui %}
+{% block title %}Equipamentos{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Equipamentos</h1>
+  {% if "catalog.manage" in caps %}<a class="btn btn-primary" href="{% url 'catalog:equipment_create' %}"><i class="bi bi-box-arrow-in-down"></i> Entrada de equipamento</a>{% endif %}
+</div>
+<form class="row g-2 mb-3" method="get">
+  <div class="col-12 col-lg-4"><input class="form-control" type="search" name="q" value="{{ request.GET.q }}" placeholder="Nome, série, patrimônio, ACES, servidor ou setor" aria-label="Buscar"></div>
+  <div class="col-6 col-lg-2">
+    <select name="categoria" class="form-select" aria-label="Categoria" onchange="this.form.submit()">
+      <option value="">Todas as categorias</option>
+      {% for c in categories %}<option value="{{ c.pk }}" {% if request.GET.categoria == c.pk|stringformat:"d" %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-6 col-lg-2">
+    <select name="situacao" class="form-select" aria-label="Situação" onchange="this.form.submit()">
+      <option value="">Todas as situações</option>
+      {% for v, l in statuses %}<option value="{{ v }}" {% if request.GET.situacao == v %}selected{% endif %}>{{ l }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-6 col-lg-2">
+    <select name="setor" class="form-select" aria-label="Setor" onchange="this.form.submit()">
+      <option value="">Todos os setores</option>
+      {% for s in sectors %}<option value="{{ s.pk }}" {% if request.GET.setor == s.pk|stringformat:"d" %}selected{% endif %}>{{ s.acronym|default:s.name }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-6 col-lg-2">
+    <select name="propriedade" class="form-select" aria-label="Propriedade" onchange="this.form.submit()">
+      <option value="">Próprios e locados</option>
+      {% for v, l in ownerships %}<option value="{{ v }}" {% if request.GET.propriedade == v %}selected{% endif %}>{{ l }}</option>{% endfor %}
+    </select>
+  </div>
+</form>
+<div class="table-responsive">
+<table class="table table-app table-hover border rounded mb-0">
+  <thead><tr><th>Equipamento</th><th>Identificação</th><th>Situação</th><th class="d-none d-md-table-cell">Onde está</th><th class="d-none d-lg-table-cell">Responsável</th></tr></thead>
+  <tbody>
+  {% for e in page %}
+    <tr>
+      <td><a href="{% url 'catalog:equipment_detail' e.pk %}">{{ e.name }}</a><div class="small text-secondary">{{ e.category }}{% if e.is_leased %} · locado{% endif %}</div></td>
+      <td class="small">{% if e.asset_tag %}<div>Patr. {{ e.asset_tag }}</div>{% endif %}{% if e.lessor_code %}<div>{{ e.lessor_code }}</div>{% endif %}{% if e.serial_number %}<div class="text-secondary">S/N {{ e.serial_number }}</div>{% endif %}</td>
+      <td>{% status_badge e %}</td>
+      <td class="d-none d-md-table-cell">{{ e.location_label }}</td>
+      <td class="d-none d-lg-table-cell">{{ e.current_recipient.full_name|default:"—" }}</td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="5" class="text-center text-secondary py-4">Nenhum equipamento encontrado.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% include "components/pagination.html" %}
+{% if request.GET.situacao != "baixado" %}<p class="small text-secondary mt-2">Equipamentos baixados não aparecem aqui; filtre por situação “Baixado” para vê-los.</p>{% endif %}
+{% endblock %}

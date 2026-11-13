@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Categorias{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Categorias</h1>
+  {% if "categories.manage" in caps %}<a class="btn btn-primary" href="{% url 'catalog:category_create' %}"><i class="bi bi-plus-lg"></i> Nova categoria</a>{% endif %}
+</div>
+<div class="row g-3">
+  {% regroup categories by get_kind_display as groups %}
+  {% for group in groups %}
+  <div class="col-12 col-xl-6">
+    <div class="card h-100">
+      <div class="card-header bg-white fw-semibold">{{ group.grouper }}</div>
+      <ul class="list-group list-group-flush">
+        {% for c in group.list %}
+        <li class="list-group-item d-flex justify-content-between align-items-center {% if not c.active %}text-secondary{% endif %}">
+          <span>{{ c.name }}{% if not c.active %} <span class="badge text-bg-secondary">inativa</span>{% endif %}</span>
+          {% if "categories.manage" in caps %}
+          <span class="d-flex gap-1">
+            <a class="btn btn-sm btn-link" href="{% url 'catalog:category_update' c.pk %}">Editar</a>
+            <form method="post" action="{% url 'catalog:category_toggle_active' c.pk %}">{% csrf_token %}<button class="btn btn-sm btn-link" type="submit">{% if c.active %}Desativar{% else %}Reativar{% endif %}</button></form>
+          </span>
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

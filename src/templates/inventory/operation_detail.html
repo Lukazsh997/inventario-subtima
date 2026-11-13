@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% load ui %}
+{% block title %}{{ operation.number }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="small text-secondary"><a href="{% url 'inventory:operation_list' %}">Movimentações</a></div>
+    <h1>{{ operation.number }} · {{ operation.get_type_display }}
+      {% if reversal %}<span class="badge text-bg-secondary fs-6 align-middle">estornada</span>{% endif %}</h1>
+  </div>
+</div>
+
+{% if reversal %}
+<div class="alert alert-secondary">Esta operação foi estornada por <a href="{% url 'inventory:operation_detail' reversal.pk %}">{{ reversal.number }}</a> em {{ reversal.performed_at|date:"d/m/Y H:i" }} ({{ reversal.performed_by.full_name }}): {{ reversal.justification }}</div>
+{% endif %}
+{% if operation.reverses %}
+<div class="alert alert-info">Estorno da operação <a href="{% url 'inventory:operation_detail' operation.reverses.pk %}">{{ operation.reverses.number }}</a>.</div>
+{% endif %}
+
+<div class="row g-3">
+  <div class="col-12 col-xl-5">
+    <div class="card"><div class="card-body">
+      <dl class="row mb-0">
+        <dt class="col-5">Data/hora</dt><dd class="col-7">{{ operation.performed_at|date:"d/m/Y H:i" }}</dd>
+        <dt class="col-5">Registrada por</dt><dd class="col-7">{{ operation.performed_by.full_name }}</dd>
+        {% if operation.origin_sector %}<dt class="col-5">Setor de origem</dt><dd class="col-7">{{ operation.origin_sector }}</dd>{% endif %}
+        {% if operation.destination_sector %}<dt class="col-5">Setor de destino</dt><dd class="col-7">{{ operation.destination_sector }}{% if operation.destination_location %}<div class="small">{{ operation.destination_location.name }}</div>{% endif %}</dd>{% endif %}
+        {% if operation.recipient %}<dt class="col-5">Recebido por</dt><dd class="col-7">{{ operation.recipient }}</dd>{% endif %}
+        {% if operation.due_date %}<dt class="col-5">Devolução prevista</dt><dd class="col-7">{{ operation.due_date|date:"d/m/Y" }}</dd>{% endif %}
+        {% if operation.third_party %}<dt class="col-5">Assistência/fornecedor</dt><dd class="col-7">{{ operation.third_party }}</dd>{% endif %}
+        {% if operation.justification %}<dt class="col-5">Justificativa</dt><dd class="col-7">{{ operation.justification|linebreaksbr }}</dd>{% endif %}
+        {% if operation.notes %}<dt class="col-5">Observações</dt><dd class="col-7">{{ operation.notes|linebreaksbr }}</dd>{% endif %}
+      </dl>
+    </div></div>
+    <p class="small text-secondary mt-2">O termo em PDF desta operação será gerado pelo módulo de documentos (Fase 5).</p>
+  </div>
+  <div class="col-12 col-xl-7">
+    <div class="card mb-3">
+      <div class="card-header bg-white fw-semibold">Itens</div>
+      <div class="table-responsive">
+        <table class="table table-sm mb-0">
+          <thead><tr><th>Item</th><th>Identificação</th><th class="text-end">Quantidade</th><th>Situação / saldo</th></tr></thead>
+          <tbody>
+          {% for m in movements %}
+            {% if m.equipment %}
+            <tr>
+              <td><a href="{% url 'catalog:equipment_detail' m.equipment.pk %}">{{ m.equipment.name }}</a><div class="small text-secondary">{{ m.equipment.manufacturer }} {{ m.equipment.model }}</div></td>
+              <td class="small">{% if m.equipment.asset_tag %}Patr. {{ m.equipment.asset_tag }}<br>{% endif %}{% if m.equipment.lessor_code %}{{ m.equipment.lessor_code }}<br>{% endif %}{% if m.equipment.serial_number %}S/N {{ m.equipment.serial_number }}{% endif %}</td>
+              <td class="text-end">1</td>
+              <td class="small">{% if m.status_before %}{{ m.get_status_before_display }} → {% endif %}{{ m.get_status_after_display }}</td>
+            </tr>
+            {% else %}
+            <tr>
+              <td><a href="{% url 'catalog:consumable_detail' m.consumable.pk %}">{{ m.consumable.name }}</a></td>
+              <td class="small">{{ m.consumable.reference|default:"" }}</td>
+              <td class="text-end {% if m.quantity < 0 %}text-danger{% else %}text-success{% endif %}">{{ m.quantity|signed }} {{ m.consumable.get_unit_display }}</td>
+              <td class="small">saldo após: {{ m.balance_after }}</td>
+            </tr>
+            {% endif %}
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% if accessories %}
+    <div class="card mb-3">
+      <div class="card-header bg-white fw-semibold">Acessórios entregues</div>
+      <ul class="list-group list-group-flush">{% for a in accessories %}<li class="list-group-item">{{ a.quantity }} × {{ a.description }}</li>{% endfor %}</ul>
+    </div>
+    {% endif %}
+    {% if "operation.reverse" in caps and not reversal and operation.type != "estorno" %}
+    <div class="card border-danger-subtle">
+      <div class="card-body">
+        <form method="post" action="{% url 'inventory:operation_reverse' operation.pk %}" data-confirm="Estornar a operação {{ operation.number }}? Será criada uma operação inversa; a original continua no histórico." data-confirm-style="danger">
+          {% csrf_token %}
+          <label class="form-label fw-semibold" for="reverse-justification">Estornar esta operação</label>
+          <textarea class="form-control mb-2" id="reverse-justification" name="justification" rows="2" required placeholder="Motivo do estorno (obrigatório)"></textarea>
+          <button class="btn btn-outline-danger" type="submit">Estornar</button>
+        </form>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

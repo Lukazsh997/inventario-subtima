@@ -13,7 +13,7 @@ def test_capabilities_by_role(admin_user, tech_user, viewer_user):
     assert has_capability(tech_user, Capability.RECIPIENTS_MANAGE)
     assert not has_capability(tech_user, Capability.USERS_MANAGE)
     assert not has_capability(tech_user, Capability.SECTORS_MANAGE)
-    assert capabilities_for(viewer_user) == {Capability.ORG_VIEW}
+    assert capabilities_for(viewer_user) == {Capability.ORG_VIEW, Capability.INVENTORY_VIEW}
 
 
 def test_inactive_user_has_no_capabilities(admin_user):

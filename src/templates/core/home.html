@@ -5,33 +5,69 @@
     <h1>Olá, {{ request.user.full_name|default:request.user.username }}</h1>
     <div class="text-secondary small">{{ ORG_NAME }} · {{ ORG_UNIT_NAME }}</div>
   </div>
+  {% if "inventory.operate" in caps %}
+  <div class="d-flex flex-wrap gap-2">
+    <a class="btn btn-primary" href="{% url 'catalog:equipment_create' %}"><i class="bi bi-box-arrow-in-down"></i> Entrada de equipamento</a>
+    <a class="btn btn-outline-primary" href="{% url 'inventory:equipment_operation' %}"><i class="bi bi-box-arrow-up-right"></i> Movimentar equipamento</a>
+    <a class="btn btn-outline-primary" href="{% url 'inventory:consumable_operation' %}"><i class="bi bi-cart-dash"></i> Retirada de material</a>
+  </div>
+  {% endif %}
 </div>
+
+{% if equipment_stats %}
 <div class="row g-3 mb-4">
-  <div class="col-6 col-md-3">
-    <a class="card card-stat text-decoration-none text-reset h-100" href="{% url 'organization:sector_list' %}"><div class="card-body">
-      <div class="value">{{ sector_count }}</div><div class="label">Setores ativos</div>
+  {% for value, label, count in equipment_stats %}
+  <div class="col-6 col-md-4 col-xl-2">
+    <a class="card card-stat text-decoration-none text-reset h-100" href="{% url 'catalog:equipment_list' %}?situacao={{ value }}"><div class="card-body">
+      <div class="value">{{ count }}</div><div class="label">Equipamentos · {{ label|lower }}</div>
     </div></a>
   </div>
-  <div class="col-6 col-md-3">
-    <a class="card card-stat text-decoration-none text-reset h-100" href="{% url 'organization:recipient_list' %}"><div class="card-body">
-      <div class="value">{{ recipient_count }}</div><div class="label">Servidores cadastrados</div>
+  {% endfor %}
+  <div class="col-6 col-md-4 col-xl-2">
+    <a class="card card-stat text-decoration-none text-reset h-100 {% if critical_count %}border-warning{% endif %}" href="{% url 'catalog:consumable_list' %}?situacao=critico"><div class="card-body">
+      <div class="value {% if critical_count %}text-warning-emphasis{% endif %}">{{ critical_count }}</div><div class="label">Materiais no mínimo ou abaixo</div>
     </div></a>
   </div>
-</div>
-<div class="alert alert-light border small">
-  Os módulos de equipamentos, consumíveis, movimentações e termos entram nas próximas entregas.
-</div>
-{% if recent_audit %}
-<div class="card">
-  <div class="card-header bg-white fw-semibold d-flex justify-content-between">Atividades recentes <a class="small" href="{% url 'audit:list' %}">ver tudo</a></div>
-  <ul class="list-group list-group-flush">
-    {% for e in recent_audit %}
-    <li class="list-group-item small d-flex justify-content-between gap-3">
-      <span><strong>{{ e.username|default:"—" }}</strong> · {{ e.get_action_display }} · {{ e.summary }}</span>
-      <span class="text-secondary text-nowrap">{{ e.created_at|date:"d/m H:i" }}</span>
-    </li>
-    {% endfor %}
-  </ul>
+  <div class="col-6 col-md-4 col-xl-2">
+    <a class="card card-stat text-decoration-none text-reset h-100 {% if empty_count %}border-danger{% endif %}" href="{% url 'catalog:consumable_list' %}?situacao=zerado"><div class="card-body">
+      <div class="value {% if empty_count %}text-danger{% endif %}">{{ empty_count }}</div><div class="label">Materiais sem estoque</div>
+    </div></a>
+  </div>
 </div>
 {% endif %}
+
+<div class="row g-3">
+  {% if recent_operations is not None %}
+  <div class="col-12 col-xl-7">
+    <div class="card h-100">
+      <div class="card-header bg-white fw-semibold d-flex justify-content-between">Últimas movimentações <a class="small" href="{% url 'inventory:operation_list' %}">ver todas</a></div>
+      <ul class="list-group list-group-flush">
+        {% for op in recent_operations %}
+        <li class="list-group-item small d-flex justify-content-between gap-3">
+          <span><a href="{% url 'inventory:operation_detail' op.pk %}">{{ op.number }}</a> · {{ op.get_type_display }}{% if op.destination_sector %} → {{ op.destination_sector.acronym|default:op.destination_sector.name }}{% endif %}{% if op.recipient %} · {{ op.recipient.full_name }}{% endif %} <span class="text-secondary">por {{ op.performed_by.full_name }}</span></span>
+          <span class="text-secondary text-nowrap">{{ op.performed_at|date:"d/m H:i" }}</span>
+        </li>
+        {% empty %}
+        <li class="list-group-item text-secondary">Nenhuma movimentação ainda.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  {% endif %}
+  {% if recent_audit %}
+  <div class="col-12 col-xl-5">
+    <div class="card h-100">
+      <div class="card-header bg-white fw-semibold d-flex justify-content-between">Auditoria recente <a class="small" href="{% url 'audit:list' %}">ver tudo</a></div>
+      <ul class="list-group list-group-flush">
+        {% for e in recent_audit %}
+        <li class="list-group-item small d-flex justify-content-between gap-3">
+          <span><strong>{{ e.username|default:"—" }}</strong> · {{ e.get_action_display }} · {{ e.summary }}</span>
+          <span class="text-secondary text-nowrap">{{ e.created_at|date:"d/m H:i" }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  {% endif %}
+</div>
 {% endblock %}

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load ui %}
+{% block title %}Busca{% endblock %}
+{% block content %}
+<div class="page-header"><h1>Resultados para “{{ search_term }}”</h1></div>
+{% if not search_term %}
+<p class="text-secondary">Digite ou leia um código na barra de busca.</p>
+{% else %}
+<div class="row g-3">
+  {% if "inventory.view" in caps %}
+  <div class="col-12 col-xl-6">
+    <div class="card h-100"><div class="card-header bg-white fw-semibold">Equipamentos</div>
+      <ul class="list-group list-group-flush">
+        {% for e in equipment %}
+        <li class="list-group-item d-flex justify-content-between gap-2">
+          <a href="{% url 'catalog:equipment_detail' e.pk %}">{{ e.name }} · {{ e.main_identifier }}</a>
+          {% status_badge e %}
+        </li>
+        {% empty %}<li class="list-group-item text-secondary">Nenhum equipamento.</li>{% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="col-12 col-xl-6">
+    <div class="card h-100"><div class="card-header bg-white fw-semibold">Materiais de consumo</div>
+      <ul class="list-group list-group-flush">
+        {% for c in consumables %}
+        <li class="list-group-item d-flex justify-content-between"><a href="{% url 'catalog:consumable_detail' c.pk %}">{{ c.name }}</a><span>{{ c.balance.quantity }} {{ c.get_unit_display }}</span></li>
+        {% empty %}<li class="list-group-item text-secondary">Nenhum material.</li>{% endfor %}
+      </ul>
+    </div>
+  </div>
+  {% endif %}
+  {% if "org.view" in caps %}
+  <div class="col-12 col-xl-6">
+    <div class="card h-100"><div class="card-header bg-white fw-semibold">Servidores</div>
+      <ul class="list-group list-group-flush">
+        {% for r in recipients %}
+        <li class="list-group-item">{{ r }} <span class="text-secondary small">· {{ r.sector.acronym|default:r.sector.name }}</span></li>
+        {% empty %}<li class="list-group-item text-secondary">Nenhum servidor.</li>{% endfor %}
+      </ul>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

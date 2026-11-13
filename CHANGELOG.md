@@ -2,6 +2,27 @@
 
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). Versões seguem [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.2.0] - 2026-11-12
+
+Fase 3 (estoque).
+
+### Adicionado
+- Categorias de equipamento e de consumo, com as categorias iniciais do documento de requisitos e "Estabilizadores".
+- Equipamentos próprios e locados, identificados pelas etiquetas existentes: patrimônio da Prefeitura, nº de série e código ACES da locadora. O link do QR da locadora é convertido no código.
+- Leitura pela câmera (html5-qrcode/ZXing, local) e por leitor USB; tela "Ler etiqueta" e busca global que abre direto a ficha.
+- Entrada de equipamento, inclusive "já em uso" para o inventário inicial e "salvar e cadastrar outro igual".
+- Operações de equipamento: saída, transferência, devolução, empréstimo (com data prevista), retorno, envio e retorno de manutenção, baixa. Vários itens por operação, acessórios entregues e cadastro rápido de servidor.
+- Materiais de consumo com saldo: entrada, saída, devolução e ajuste. Estoque negativo bloqueado no serviço e no banco.
+- Estorno de operações com justificativa, mantendo a original.
+- Histórico imutável (gatilhos no banco), numeração `OP-AAAA-NNNNNN` e histórico de localização e responsabilidade por equipamento.
+- Tela inicial com totais por situação e materiais críticos ou sem estoque.
+- Comando `carregar_suprimentos` com os 43 toners e tintas informados pela equipe.
+- Guia de operação (`docs/operacao.md`).
+- 47 testes novos (97 no total), incluindo retiradas simultâneas com conexões paralelas reais.
+
+### Alterado
+- Perfis Técnico de TI e Consulta passam a acessar o estoque; baixa, ajuste e estorno são exclusivos do Administrador.
+
 ## [0.1.0] - 2026-11-10
 
 Fase 2 (fundação).

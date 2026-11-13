@@ -1,3 +1,31 @@
+// Componentes Alpine reutilizáveis.
+document.addEventListener("alpine:init", function () {
+  "use strict";
+
+  // Setor de destino → servidores e locais daquele setor (JSON do servidor).
+  window.Alpine.data("destinationPicker", function (config) {
+    return {
+      sector: config.sector || "",
+      recipient: config.recipient || "",
+      location: config.location || "",
+      newName: config.newName || "",
+      creating: !!config.newName,
+      recipients: [],
+      locations: [],
+      init: function () { if (this.sector) { this.load(true); } },
+      load: function (keepSelection) {
+        var self = this;
+        if (!keepSelection) { self.recipient = ""; self.location = ""; }
+        self.recipients = []; self.locations = [];
+        if (!self.sector) { return; }
+        fetch(config.url + "?setor=" + encodeURIComponent(self.sector), { headers: { "Accept": "application/json" } })
+          .then(function (r) { return r.json(); })
+          .then(function (data) { self.recipients = data.recipients; self.locations = data.locations; });
+      }
+    };
+  });
+});
+
 // Confirmação para operações críticas: <form data-confirm="Mensagem"> abre um modal antes de enviar.
 (function () {
   "use strict";

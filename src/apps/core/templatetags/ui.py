@@ -15,6 +15,24 @@ def add_class(field, css: str):
     return field.as_widget(attrs={"class": classes})
 
 
+@register.simple_tag
+def status_badge(equipment):
+    """Etiqueta colorida com a situação do equipamento."""
+    from django.utils.html import format_html
+
+    return format_html(
+        '<span class="badge badge-status-{}">{}</span>', equipment.status, equipment.get_status_display()
+    )
+
+
+@register.filter
+def signed(value) -> str:
+    try:
+        return f"{int(value):+d}"
+    except (TypeError, ValueError):
+        return ""
+
+
 @register.simple_tag(takes_context=True)
 def active_if(context, prefix: str) -> str:
     request = context.get("request")
