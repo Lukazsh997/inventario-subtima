@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Importar equipamentos{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="small text-secondary"><a href="{% url 'catalog:equipment_list' %}">Equipamentos</a></div>
+    <h1>Importar equipamentos de planilha</h1>
+  </div>
+  <a class="btn btn-outline-secondary" href="{% url 'catalog:equipment_import_template' %}"><i class="bi bi-download"></i> Baixar modelo de planilha</a>
+</div>
+<div class="card mb-3"><div class="card-body">
+  <ol class="small mb-3">
+    <li>Baixe o modelo, preencha uma linha por equipamento (até {{ max_rows }}) e salve como <strong>CSV</strong> ou <strong>XLSX</strong>.</li>
+    <li>Obrigatórios: <code>categoria</code> (igual a uma categoria do sistema), <code>nome</code> e pelo menos um entre <code>patrimonio</code>, <code>serie</code> e <code>codigo_locadora</code>.</li>
+    <li>Para equipamento que <strong>já está em uso</strong>, preencha <code>setor_atual</code> (sigla ou nome) e <code>servidor_atual</code> (matrícula ou nome; cadastre o servidor antes). Vazios = disponível no estoque da TI.</li>
+    <li>Envie, confira a prévia e confirme. Se qualquer linha tiver erro, nada é importado.</li>
+  </ol>
+  <form method="post" enctype="multipart/form-data" class="d-flex flex-wrap gap-2 align-items-center">
+    {% csrf_token %}
+    <input class="form-control" style="max-width:420px" type="file" name="arquivo" accept=".csv,.xlsx" required aria-label="Planilha">
+    <button class="btn btn-primary" type="submit">Enviar e conferir</button>
+  </form>
+  <div class="form-text">Colunas: {{ columns|join:", " }}</div>
+</div></div>
+{% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+{% if rows %}
+  {% if invalid %}
+  <div class="alert alert-warning"><strong>{{ invalid }} de {{ rows|length }} linhas com erro.</strong> Corrija a planilha e envie de novo; nada foi importado.</div>
+  {% else %}
+  <div class="alert alert-success d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <span><strong>{{ rows|length }} equipamentos prontos para importar.</strong> Confira a lista abaixo.</span>
+    <form method="post" data-confirm="Importar {{ rows|length }} equipamentos? Cada um recebe uma operação de Entrada.">{% csrf_token %}<input type="hidden" name="confirmar" value="1"><button class="btn btn-success" type="submit">Confirmar importação</button></form>
+  </div>
+  {% endif %}
+  <div class="table-responsive">
+  <table class="table table-sm table-app border rounded">
+    <thead><tr><th>Linha</th><th>Nome</th><th>Categoria</th><th>Identificação</th><th>Situação inicial</th><th>Problemas</th></tr></thead>
+    <tbody>
+    {% for r in rows %}
+      <tr class="{% if r.errors %}row-empty{% endif %}">
+        <td>{{ r.line }}</td>
+        <td>{{ r.values.nome }}</td>
+        <td>{{ r.values.categoria }}</td>
+        <td class="small">{% if r.values.patrimonio %}Patr. {{ r.values.patrimonio }} {% endif %}{% if r.values.serie %}S/N {{ r.values.serie }} {% endif %}{{ r.values.codigo_locadora }}</td>
+        <td class="small">{% if r.errors %}—{% elif r.placement %}Em uso · {{ r.placement.sector.acronym|default:r.placement.sector.name }} · {{ r.placement.recipient.full_name }}{% else %}Disponível (estoque da TI){% endif %}</td>
+        <td class="small text-danger">{{ r.errors|join:" " }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+{% endif %}
+{% endblock %}

@@ -4,7 +4,10 @@
 {% block content %}
 <div class="page-header">
   <h1>Equipamentos</h1>
-  {% if "catalog.manage" in caps %}<a class="btn btn-primary" href="{% url 'catalog:equipment_create' %}"><i class="bi bi-box-arrow-in-down"></i> Entrada de equipamento</a>{% endif %}
+  {% if "catalog.manage" in caps %}<div class="d-flex flex-wrap gap-2">
+    <a class="btn btn-outline-primary" href="{% url 'catalog:equipment_import' %}"><i class="bi bi-file-earmark-spreadsheet"></i> Importar planilha</a>
+    <a class="btn btn-primary" href="{% url 'catalog:equipment_create' %}"><i class="bi bi-box-arrow-in-down"></i> Entrada de equipamento</a>
+  </div>{% endif %}
 </div>
 <form class="row g-2 mb-3" method="get">
   <div class="col-12 col-lg-4"><input class="form-control" type="search" name="q" value="{{ request.GET.q }}" placeholder="Nome, série, patrimônio, ACES, servidor ou setor" aria-label="Buscar"></div>

@@ -4,7 +4,7 @@ Sistema web de gestão de patrimônio e estoque de TI: equipamentos identificado
 
 Desenvolvido para a Subsecretaria de Tecnologia da Informação e Modernização Administrativa (SUBTIMA) da Prefeitura Municipal de Duque de Caxias. Roda inteiramente na rede interna, em Docker, apenas com software livre.
 
-## Situação atual: versão 0.4.0 (Fase 5: termos e documentos)
+## Situação atual: versão 1.0.0-rc.1 (Fase 6: homologação)
 
 | Módulo | Situação |
 |---|---|
@@ -19,8 +19,10 @@ Desenvolvido para a Subsecretaria de Tecnologia da Informação e Modernização
 | Histórico imutável, saldo nunca negativo, histórico de localização/responsabilidade | pronto |
 | Painel com indicadores, 6 gráficos e filtros por período, categoria e setor | pronto |
 | Alertas de estoque mínimo (registro, sem duplicatas, encerramento automático) e página de materiais críticos | pronto |
-| 10 relatórios com filtros e exportação em PDF (A4) e CSV | pronto |
+| 11 relatórios com filtros e exportação em PDF (A4) e CSV | pronto |
 | Termos em PDF a partir dos modelos institucionais, gerados automaticamente na operação | pronto (Transferência e Recebimento de Resmas) |
+| Importação de equipamentos por planilha (CSV/XLSX) com prévia e gravação tudo-ou-nada | pronto |
+| Revisão de segurança, verificação de implantação e teste de persistência | pronto |
 | Termo de Responsabilidade (saída/empréstimo/devolução de equipamento) | aguardando o modelo oficial do órgão |
 | Ciclo de vida do termo (gerado → impresso → aguardando assinatura → assinado → arquivado / cancelado) | pronto |
 
@@ -48,10 +50,13 @@ As permissões são verificadas nos serviços, e não apenas na interface. O map
 cp .env.example .env      # preencha SECRET_KEY, DB_PASSWORD, ADMIN_INITIAL_PASSWORD, ALLOWED_HOSTS
 docker compose up -d --build
 curl http://localhost:8000/health/
+# HTTPS: https://<SITE_ADDRESS> (veja docs/implantacao.md)
 ```
 
 Detalhes, Portainer, HTTPS e atualização: [docs/implantacao.md](docs/implantacao.md).
 Backup e restauração: [docs/backup-e-restauracao.md](docs/backup-e-restauracao.md).
+Colocação em produção (checklist, teste de persistência, reversão): [docs/homologacao.md](docs/homologacao.md).
+Segurança: [docs/seguranca.md](docs/seguranca.md).
 Banco de dados: [docs/banco-de-dados.md](docs/banco-de-dados.md).
 Material recebido do órgão (etiquetas, modelos de termo, toners): [docs/referencias/](docs/referencias/README.md).
 
@@ -65,8 +70,13 @@ Material recebido do órgão (etiquetas, modelos de termo, toners): [docs/refere
 | `ALLOWED_HOSTS` | | `localhost` | Nomes/IPs de acesso, separados por vírgula |
 | `CSRF_TRUSTED_ORIGINS` | com HTTPS | — | Ex.: `https://patrimonio.intranet.local` |
 | `USE_HTTPS` | | `false` | `true` atrás de proxy HTTPS (cookies seguros) |
+| `SECURE_SSL_REDIRECT` / `SECURE_HSTS_SECONDS` | | `false` / `0` | Com HTTPS: redirecionar HTTP→HTTPS e enviar HSTS |
+| `SITE_ADDRESS` | com HTTPS | `localhost` | Nomes/IPs atendidos pelo proxy HTTPS |
+| `DEFAULT_SNI` | acesso por IP | `localhost` | IP do servidor, para `https://IP` funcionar |
+| `TLS_CERT` / `CERTS_PATH` | | `internal` / — | Certificado gerado pelo sistema ou o do órgão |
+| `HTTP_PORT` / `HTTPS_PORT` / `APP_BIND` | | `80` / `443` / `0.0.0.0` | Portas do proxy; `APP_BIND=127.0.0.1` fecha a porta 8000 |
 | `FORWARDED_ALLOW_IPS` | com proxy | `127.0.0.1` | IP do proxy reverso confiável |
-| `APP_VERSION` / `APP_PORT` | | `0.4.0` / `8000` | Tag da imagem e porta publicada |
+| `APP_VERSION` / `APP_PORT` | | `1.0.0-rc.1` / `8000` | Tag da imagem e porta publicada |
 | `ORG_NAME` / `ORG_UNIT_NAME` | | genéricos | Nome do órgão e da unidade (tela e documentos) |
 | `TIME_ZONE` | | `America/Sao_Paulo` | Fuso horário |
 | `DOC_CITY` | | `Duque de Caxias` | Cidade na data por extenso dos termos |

@@ -204,9 +204,9 @@ def _escape(text: str) -> str:
 
 
 def render_pdf(template: DocumentTemplate, data: dict) -> bytes:
-    from weasyprint import HTML
+    from apps.core.pdf import html_to_pdf
 
-    return HTML(string=render_html(template, data)).write_pdf()
+    return html_to_pdf(render_html(template, data))
 
 
 __all__ = ["TemplateSyntaxError", "build_context", "check_template", "render_html", "render_pdf"]

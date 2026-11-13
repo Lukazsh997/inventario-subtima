@@ -361,3 +361,68 @@ def category_toggle_active(request, pk: int):
     services.set_category_active(actor=request.user, category=category, active=not category.active)
     messages.success(request, "Categoria reativada." if category.active else "Categoria desativada.")
     return redirect("catalog:category_list")
+
+
+# --- Importação em lote ----------------------------------------------------------------
+
+
+@require_GET
+@require_capability(Capability.CATALOG_MANAGE)
+def import_template(request):
+    from django.http import HttpResponse
+
+    from .importer import template_csv
+
+    response = HttpResponse(template_csv(), content_type="text/csv; charset=utf-8")
+    response["Content-Disposition"] = 'attachment; filename="modelo-importacao-equipamentos.csv"'
+    return response
+
+
+@require_http_methods(["GET", "POST"])
+@require_capability(Capability.CATALOG_MANAGE)
+def import_equipment(request):
+    """1º POST: envia a planilha e mostra a prévia (linhas guardadas na sessão).
+    2º POST (confirmar=1): revalida as mesmas linhas e importa tudo numa transação."""
+    from . import importer
+
+    rows, error, records = None, "", None
+    if request.method == "POST" and request.POST.get("confirmar") == "1":
+        records = request.session.get("import_records")
+        if not records:
+            error = "A prévia expirou. Envie a planilha novamente."
+    elif request.method == "POST":
+        uploaded = request.FILES.get("arquivo")
+        if uploaded is None:
+            error = "Escolha a planilha."
+        elif uploaded.size > 5 * 1024 * 1024:
+            error = "A planilha deve ter no máximo 5 MB."
+        else:
+            try:
+                records = importer.read_table(uploaded)
+            except ValidationError as exc:
+                error = " ".join(exc.messages)
+            else:
+                request.session["import_records"] = records
+    if records is not None:
+        rows = importer.validate(records)
+        if request.POST.get("confirmar") == "1" and not any(r.errors for r in rows):
+            try:
+                created = importer.import_rows(actor=request.user, rows=rows)
+            except ValidationError as exc:
+                error = " ".join(exc.messages)
+            else:
+                request.session.pop("import_records", None)
+                messages.success(request, f"{len(created)} equipamentos importados.")
+                return redirect("catalog:equipment_list")
+    invalid = sum(1 for r in rows or [] if r.errors)
+    return render(
+        request,
+        "catalog/import.html",
+        {
+            "rows": rows,
+            "error": error,
+            "invalid": invalid,
+            "columns": importer.COLUMNS,
+            "max_rows": importer.MAX_ROWS,
+        },
+    )

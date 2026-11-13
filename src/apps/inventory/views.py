@@ -23,6 +23,12 @@ def _form_errors(form, error: ValidationError) -> None:
         form.add_error(None, message)
 
 
+def _valid_type(request, allowed) -> str:
+    """Tipo de operação da URL/formulário, aceito só se for um dos tipos daquela tela."""
+    value = request.POST.get("type") or request.GET.get("tipo") or ""
+    return value if value in {v for v, _label in allowed} else T.EXIT
+
+
 def _type_capability_ok(user, op_type: str) -> bool:
     if op_type == T.ADJUSTMENT:
         return has_capability(user, Capability.STOCK_ADJUST)
@@ -142,7 +148,7 @@ def operation_reverse(request, pk: int):
 @require_http_methods(["GET", "POST"])
 @require_capability(Capability.INVENTORY_OPERATE)
 def equipment_operation(request):
-    op_type = request.POST.get("type") or request.GET.get("tipo") or T.EXIT
+    op_type = _valid_type(request, EQUIPMENT_TYPE_LABELS)
     form = EquipmentOperationForm(request.POST or None, op_type=op_type)
     if request.method == "POST" and form.is_valid():
         if not _type_capability_ok(request.user, op_type):
@@ -204,7 +210,7 @@ def equipment_operation(request):
 @require_http_methods(["GET", "POST"])
 @require_capability(Capability.INVENTORY_OPERATE)
 def consumable_operation(request):
-    op_type = request.POST.get("type") or request.GET.get("tipo") or T.EXIT
+    op_type = _valid_type(request, CONSUMABLE_TYPE_LABELS)
     form = ConsumableOperationForm(request.POST or None, op_type=op_type)
     if request.method == "POST" and form.is_valid():
         if not _type_capability_ok(request.user, op_type):

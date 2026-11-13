@@ -2,9 +2,9 @@
 {# Setor → local e servidor dependentes, com cadastro rápido de servidor. Espera "form" com os campos de DestinationForm. #}
 <div class="row g-3" x-data="destinationPicker({
     url: '{% url 'inventory:sector_options' %}',
-    sector: '{{ form.destination_sector.value|default:'' }}',
-    recipient: '{{ form.recipient.value|default:'' }}',
-    location: '{{ form.destination_location.value|default:'' }}',
+    sector: '{{ form.destination_sector.value|default:''|escapejs }}',
+    recipient: '{{ form.recipient.value|default:''|escapejs }}',
+    location: '{{ form.destination_location.value|default:''|escapejs }}',
     newName: '{{ form.new_recipient_name.value|default:''|escapejs }}'
   })">
   <div class="col-12 col-md-6">

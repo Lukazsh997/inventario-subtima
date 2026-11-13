@@ -22,6 +22,16 @@ O sistema usa as etiquetas que já existem nos equipamentos e não imprime etiqu
 
 O sistema recusa identificadores repetidos e mostra qual equipamento já usa aquele código.
 
+### Inventário inicial por planilha
+
+Para cadastrar de uma vez o que já existe (o levantamento feito em planilha):
+
+1. **Equipamentos → Importar planilha → Baixar modelo de planilha.** Abra no Excel ou LibreOffice; a 2ª linha é um exemplo (apague-a).
+2. Uma linha por equipamento, até 2.000. Obrigatórios: `categoria` (exatamente como cadastrada no sistema), `nome` e pelo menos um entre `patrimonio`, `serie` e `codigo_locadora`. `propriedade`: *proprio* ou *locado* (locado exige `locadora`). `estado`: *novo*, *bom*, *regular*, *ruim* (vazio = bom). Datas em dd/mm/aaaa.
+3. Equipamento que já está com alguém: preencha `setor_atual` (sigla ou nome) e `servidor_atual` (matrícula ou nome completo). O servidor precisa estar cadastrado antes. Vazio = disponível no estoque da TI.
+4. Salve como CSV ou XLSX e envie. O sistema mostra a prévia com os problemas de cada linha (categoria ou setor desconhecido, código repetido na planilha ou já cadastrado, data inválida…). **Com qualquer erro, nada é importado**: corrija e envie de novo.
+5. Sem erros, **Confirmar importação**. Cada equipamento recebe sua operação de Entrada no histórico, como no cadastro manual.
+
 ## Entregar, transferir, devolver, emprestar, mandar para manutenção
 
 1. **Movimentar equipamento**, ou o botão da ação na ficha do equipamento.

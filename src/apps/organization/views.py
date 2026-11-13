@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect, render
-from django.views.decorators.http import require_http_methods, require_POST
+from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 from apps.accounts.permissions import Capability, has_capability, require_capability
 from apps.core.listing import apply_search, paginate
@@ -29,6 +29,7 @@ def _status_filter(request, queryset):
 # --- Setores ---------------------------------------------------------------------------
 
 
+@require_GET
 @require_capability(Capability.ORG_VIEW)
 def sector_list(request):
     queryset = (
@@ -130,6 +131,7 @@ def location_toggle_active(request, pk: int):
 # --- Servidores recebedores ------------------------------------------------------------
 
 
+@require_GET
 @require_capability(Capability.ORG_VIEW)
 def recipient_list(request):
     queryset = Recipient.objects.select_related("sector")
