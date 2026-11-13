@@ -2,6 +2,25 @@
 
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). Versões seguem [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.4.0] - 2026-11-12
+
+Fase 5 (termos e documentos).
+
+### Adicionado
+- Termos em PDF gerados automaticamente ao registrar a operação, com a opção "Gerar o termo em PDF ao registrar" marcada por padrão. O PDF fica guardado no banco de dados exatamente como foi emitido, com hash SHA-256 e os dados preenchidos.
+- Reprodução fiel dos dois modelos institucionais recebidos: **Termo de Transferência** (transferência de equipamentos) e **Termo de Recebimento de Resmas** (saída de material). O texto é copiado literalmente; o brasão e o logotipo foram extraídos dos próprios arquivos.
+- Número único do termo (`TR-AAAA-NNNNNN`), impresso discretamente no rodapé junto com o número da operação, para localizar a via assinada.
+- Situações do termo: gerado, impresso (automática ao abrir para impressão), aguardando assinatura, assinado e recebido pela TI, arquivado e cancelado. O histórico registra quem mudou e quando.
+- Reimpressão sempre do mesmo arquivo, com contador; reemissão (cancela o termo e gera outro com o modelo atual); cancelamento automático quando a operação é estornada.
+- Modelos versionados e editáveis pelo administrador, com variáveis documentadas na tela, prévia com a operação real mais recente e "copiar layout" para criar modelos novos. Uma versão já usada nunca é alterada.
+- Motor de modelos isolado: o modelo só recebe textos e números, sem acesso a objetos do banco, `{% load %}` ou `{% include %}`.
+- Substituição do brasão e do logotipo por imagens de melhor resolução, pela interface.
+- Página "Termos" com filtros (situação, pendentes de assinatura, modelo) e o relatório "Documentos e termos emitidos" (11º relatório).
+- 15 testes novos (137 no total). Conferem o texto dos PDFs gerados contra os originais.
+
+### Corrigido
+- O termo mostrava "Prefeitura Municipal de Duque de Caxias" no lugar da secretaria quando a Prefeitura estava cadastrada como setor principal. Agora o termo usa a secretaria mais próxima do setor (o primeiro nível cujo nome começa com "Secretaria"). Sem secretaria na hierarquia, usa o nível logo abaixo da Prefeitura ou o próprio setor.
+
 ## [0.3.0] - 2026-11-12
 
 Fase 4 (painel, alertas e relatórios).

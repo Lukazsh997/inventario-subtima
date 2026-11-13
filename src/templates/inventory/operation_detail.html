@@ -32,7 +32,31 @@
         {% if operation.notes %}<dt class="col-5">Observações</dt><dd class="col-7">{{ operation.notes|linebreaksbr }}</dd>{% endif %}
       </dl>
     </div></div>
-    <p class="small text-secondary mt-2">O termo em PDF desta operação será gerado pelo módulo de documentos (Fase 5).</p>
+    <div class="card mt-3">
+      <div class="card-header bg-white fw-semibold">Termos</div>
+      <ul class="list-group list-group-flush">
+        {% for d in documents %}
+        <li class="list-group-item d-flex flex-wrap justify-content-between align-items-center gap-2">
+          <span><a href="{% url 'documents:detail' d.pk %}">{{ d.number }}</a> · {{ d.template.name }}
+            <span class="badge {% if d.status == 'cancelado' %}text-bg-secondary{% elif d.status == 'assinado' or d.status == 'arquivado' %}text-bg-success{% else %}text-bg-primary{% endif %}">{{ d.get_status_display }}</span></span>
+          {% if d.status != "cancelado" %}<a class="btn btn-sm btn-primary" target="_blank" rel="noopener" href="{% url 'documents:pdf' d.pk %}?imprimir=1"><i class="bi bi-printer"></i> Imprimir</a>{% endif %}
+        </li>
+        {% empty %}
+        <li class="list-group-item small text-secondary">
+          {% if has_template %}Nenhum termo emitido para esta operação.{% else %}Não há modelo de termo configurado para este tipo de operação.{% if "templates.manage" in caps %} <a href="{% url 'documents:template_list' %}">Configurar modelos</a>.{% endif %}{% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+      {% if has_template and "inventory.operate" in caps and not reversal and operation.type != "estorno" %}
+        {% if not documents or documents.0.status == "cancelado" %}
+        <div class="card-body border-top">
+          <form method="post" action="{% url 'documents:issue_for_operation' operation.pk %}">{% csrf_token %}
+            <button class="btn btn-outline-primary btn-sm" type="submit"><i class="bi bi-file-earmark-plus"></i> Gerar termo</button>
+          </form>
+        </div>
+        {% endif %}
+      {% endif %}
+    </div>
   </div>
   <div class="col-12 col-xl-7">
     <div class="card mb-3">

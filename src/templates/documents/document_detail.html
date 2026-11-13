@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}{{ document.number }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="small text-secondary"><a href="{% url 'documents:list' %}">Termos</a></div>
+    <h1>{{ document.number }} · {{ document.template.name }}</h1>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    {% if document.status != "cancelado" %}
+    <a class="btn btn-primary" target="_blank" rel="noopener" href="{% url 'documents:pdf' document.pk %}?imprimir=1"><i class="bi bi-printer"></i> Imprimir</a>
+    {% endif %}
+    <a class="btn btn-outline-secondary" href="{% url 'documents:pdf' document.pk %}?baixar=1"><i class="bi bi-download"></i> Baixar PDF</a>
+  </div>
+</div>
+{% if document.status == "cancelado" %}
+<div class="alert alert-secondary">Termo cancelado.{% if replaced_by %} Substituído por <a href="{% url 'documents:detail' replaced_by.pk %}">{{ replaced_by.number }}</a>.{% endif %}</div>
+{% endif %}
+<div class="row g-3">
+  <div class="col-12 col-xl-5">
+    <div class="card mb-3"><div class="card-body">
+      <dl class="row mb-0">
+        <dt class="col-5">Situação</dt><dd class="col-7 fw-semibold">{{ document.get_status_display }}</dd>
+        <dt class="col-5">Operação</dt><dd class="col-7"><a href="{% url 'inventory:operation_detail' document.operation.pk %}">{{ document.operation.number }}</a> · {{ document.operation.get_type_display }}</dd>
+        <dt class="col-5">Emitido em</dt><dd class="col-7">{{ document.issued_at|date:"d/m/Y H:i" }} por {{ document.issued_by.full_name }}</dd>
+        <dt class="col-5">Modelo</dt><dd class="col-7">{{ document.template.name }} (versão {{ document.template.version }})</dd>
+        <dt class="col-5">Impressões</dt><dd class="col-7">{{ document.print_count }}</dd>
+        {% if document.replaces %}<dt class="col-5">Substitui</dt><dd class="col-7"><a href="{% url 'documents:detail' document.replaces.pk %}">{{ document.replaces.number }}</a></dd>{% endif %}
+        <dt class="col-5">Integridade</dt><dd class="col-7 small text-break"><span class="text-secondary">SHA-256</span> {{ document.sha256 }}<br><span class="text-secondary">{{ document.size|filesizeformat }}, guardado no banco de dados</span></dd>
+      </dl>
+    </div></div>
+
+    {% if "inventory.operate" in caps and next_statuses %}
+    <div class="card mb-3"><div class="card-body">
+      <form method="post" action="{% url 'documents:status' document.pk %}" class="row g-2 align-items-end">
+        {% csrf_token %}
+        <div class="col-12 col-md-6">
+          <label class="form-label small" for="status">Atualizar situação</label>
+          <select class="form-select" id="status" name="status">
+            {% for v, l in next_statuses %}<option value="{{ v }}">{{ l }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-12 col-md-6">
+          <label class="form-label small" for="note">Observação <span class="text-secondary">(obrigatória para cancelar)</span></label>
+          <input class="form-control" id="note" name="note" maxlength="255" placeholder="Ex.: via assinada na pasta 2026/11">
+        </div>
+        <div class="col-12"><button class="btn btn-outline-primary" type="submit">Salvar situação</button></div>
+      </form>
+      <p class="small text-secondary mt-2 mb-0">A via assinada fica em papel com a TI; aqui só se registra o andamento.</p>
+    </div></div>
+    {% if document.status != "cancelado" %}
+    <div class="card"><div class="card-body">
+      <form method="post" action="{% url 'documents:reissue' document.pk %}" data-confirm="Reemitir {{ document.number }}? Este termo será cancelado e um novo número será gerado com o modelo ativo atual." data-confirm-style="danger">
+        {% csrf_token %}
+        <label class="form-label small" for="reason">Reemitir com o modelo atual (cancela este termo)</label>
+        <div class="input-group">
+          <input class="form-control" id="reason" name="reason" required maxlength="200" placeholder="Motivo">
+          <button class="btn btn-outline-danger" type="submit">Reemitir</button>
+        </div>
+      </form>
+    </div></div>
+    {% endif %}
+    {% endif %}
+  </div>
+  <div class="col-12 col-xl-7">
+    <div class="card mb-3">
+      <div class="card-header bg-white fw-semibold">Andamento</div>
+      <ul class="timeline p-3 mb-0">
+        {% for h in history %}
+        <li><div class="fw-semibold">{{ h.get_to_status_display }}</div>
+          <div class="small text-secondary">{{ h.changed_at|date:"d/m/Y H:i" }} · {{ h.changed_by.full_name }}{% if h.note %} · {{ h.note }}{% endif %}</div></li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-header bg-white fw-semibold">Visualização</div>
+      <iframe class="w-100 border-0" style="height: 70vh" title="PDF do termo" src="{% url 'documents:pdf' document.pk %}"></iframe>
+    </div>
+  </div>
+</div>
+{% endblock %}

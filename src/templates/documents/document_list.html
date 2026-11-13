@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Termos{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Termos emitidos</h1>
+  <a class="btn btn-outline-secondary" href="{% url 'documents:template_list' %}"><i class="bi bi-file-earmark-richtext"></i> Modelos de termo</a>
+</div>
+<form class="row g-2 mb-3" method="get">
+  <div class="col-12 col-lg-4"><input class="form-control" type="search" name="q" value="{{ request.GET.q }}" placeholder="Nº do termo, nº da operação ou servidor" aria-label="Buscar"></div>
+  <div class="col-6 col-lg-3">
+    <select class="form-select" name="situacao" aria-label="Situação" onchange="this.form.submit()">
+      <option value="">Todas as situações</option>
+      <option value="pendentes" {% if request.GET.situacao == "pendentes" %}selected{% endif %}>Pendentes (ainda sem assinatura)</option>
+      {% for v, l in statuses %}<option value="{{ v }}" {% if request.GET.situacao == v %}selected{% endif %}>{{ l }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-6 col-lg-3">
+    <select class="form-select" name="modelo" aria-label="Modelo" onchange="this.form.submit()">
+      <option value="">Todos os modelos</option>
+      {% for t in templates %}<option value="{{ t.pk }}" {% if request.GET.modelo == t.pk|stringformat:"d" %}selected{% endif %}>{{ t.name }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-12 col-lg-2"><button class="btn btn-outline-secondary w-100" type="submit"><i class="bi bi-search"></i> Buscar</button></div>
+</form>
+<div class="table-responsive">
+<table class="table table-app table-hover border rounded mb-0">
+  <thead><tr><th>Termo</th><th>Emitido em</th><th>Modelo</th><th class="d-none d-md-table-cell">Operação / recebedor</th><th>Situação</th><th></th></tr></thead>
+  <tbody>
+  {% for d in page %}
+  <tr class="{% if d.status == 'cancelado' %}row-inactive{% endif %}">
+    <td><a href="{% url 'documents:detail' d.pk %}">{{ d.number }}</a></td>
+    <td class="text-nowrap">{{ d.issued_at|date:"d/m/Y H:i" }}</td>
+    <td>{{ d.template.name }} <span class="small text-secondary">v{{ d.template.version }}</span></td>
+    <td class="d-none d-md-table-cell"><a href="{% url 'inventory:operation_detail' d.operation.pk %}">{{ d.operation.number }}</a>{% if d.operation.recipient %}<div class="small">{{ d.operation.recipient.full_name }}</div>{% endif %}</td>
+    <td>{{ d.get_status_display }}</td>
+    <td class="text-end">{% if d.status != "cancelado" %}<a class="btn btn-sm btn-outline-primary" target="_blank" rel="noopener" href="{% url 'documents:pdf' d.pk %}?imprimir=1" title="Imprimir"><i class="bi bi-printer"></i><span class="visually-hidden">Imprimir</span></a>{% endif %}</td>
+  </tr>
+  {% empty %}
+  <tr><td colspan="6" class="text-center text-secondary py-4">Nenhum termo encontrado.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% include "components/pagination.html" %}
+{% endblock %}

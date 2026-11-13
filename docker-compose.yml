@@ -16,6 +16,7 @@ x-app-env: &app-env
   TIME_ZONE: ${TIME_ZONE:-America/Sao_Paulo}
   ORG_NAME: ${ORG_NAME:-Prefeitura Municipal}
   ORG_UNIT_NAME: ${ORG_UNIT_NAME:-Setor de Tecnologia da Informação}
+  DOC_CITY: ${DOC_CITY:-Duque de Caxias}
   SESSION_TIMEOUT_MINUTES: ${SESSION_TIMEOUT_MINUTES:-480}
   LOG_LEVEL: ${LOG_LEVEL:-INFO}
   BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-30}
@@ -42,11 +43,11 @@ services:
       retries: 10
 
   app:
-    image: ${APP_IMAGE:-patrimonio-ti}:${APP_VERSION:-0.3.0}
+    image: ${APP_IMAGE:-patrimonio-ti}:${APP_VERSION:-0.4.0}
     build:
       context: .
       args:
-        APP_VERSION: ${APP_VERSION:-0.3.0}
+        APP_VERSION: ${APP_VERSION:-0.4.0}
     restart: unless-stopped
     command: ["web"]
     environment:
@@ -66,7 +67,7 @@ services:
       - ${BACKUP_PATH:-backups}:/backups
 
   scheduler:
-    image: ${APP_IMAGE:-patrimonio-ti}:${APP_VERSION:-0.3.0}
+    image: ${APP_IMAGE:-patrimonio-ti}:${APP_VERSION:-0.4.0}
     restart: unless-stopped
     command: ["scheduler"]
     environment:

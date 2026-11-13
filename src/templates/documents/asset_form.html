@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load ui %}
+{% block title %}Substituir {{ asset.name }}{% endblock %}
+{% block content %}
+<div class="page-header"><h1>Substituir {{ asset.name }}</h1></div>
+<div class="card" style="max-width:640px"><div class="card-body">
+  <p class="d-flex align-items-center gap-3"><span class="text-secondary small">Imagem atual:</span><img src="{% url 'documents:asset_image' asset.key %}" alt="{{ asset.name }}" style="max-height:80px"></p>
+  <form method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+    <label class="form-label" for="{{ form.image.id_for_label }}">{{ form.image.label }}</label>
+    {{ form.image|add_class:"form-control" }}
+    {% for e in form.image.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+    <div class="form-text mb-3">Os termos já emitidos não mudam: cada PDF guarda a imagem usada na emissão.</div>
+    <div class="d-flex gap-2"><button class="btn btn-primary" type="submit">Substituir</button><a class="btn btn-outline-secondary" href="{% url 'documents:template_list' %}">Cancelar</a></div>
+  </form>
+</div></div>
+{% endblock %}

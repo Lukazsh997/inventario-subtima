@@ -43,6 +43,7 @@
         <li class="nav-item"><a class="nav-link {% active_if '/estoque/materiais' %}" href="{% url 'catalog:consumable_list' %}"><i class="bi bi-box-seam"></i> Materiais de consumo</a></li>
         <li class="nav-item"><a class="nav-link {% if request.path == '/estoque/operacoes/' or '/estoque/operacoes/' in request.path and '/nova/' not in request.path %}active{% endif %}" href="{% url 'inventory:operation_list' %}"><i class="bi bi-arrow-left-right"></i> Movimentações</a></li>
         <li class="nav-item"><a class="nav-link {% active_if '/alertas' %}" href="{% url 'alerts:critical_list' %}"><i class="bi bi-bell"></i> Materiais críticos{% if open_alerts %} <span class="badge rounded-pill text-bg-warning ms-auto" aria-label="{{ open_alerts }} alertas abertos">{{ open_alerts }}</span>{% endif %}</a></li>
+        <li class="nav-item"><a class="nav-link {% active_if '/termos' %}" href="{% url 'documents:list' %}"><i class="bi bi-file-earmark-text"></i> Termos</a></li>
         <li class="nav-item"><a class="nav-link {% active_if '/relatorios' %}" href="{% url 'reports:index' %}"><i class="bi bi-file-earmark-bar-graph"></i> Relatórios</a></li>
         <li class="nav-item"><a class="nav-link {% active_if '/estoque/categorias' %}" href="{% url 'catalog:category_list' %}"><i class="bi bi-tags"></i> Categorias</a></li>
         {% endif %}

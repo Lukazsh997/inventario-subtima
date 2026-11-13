@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load ui %}
+{% block title %}{% if base %}Nova versão de {{ base.name }}{% else %}Novo modelo{% endif %}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="small text-secondary"><a href="{% url 'documents:template_list' %}">Modelos de termo</a></div>
+    <h1>{% if base %}Nova versão de {{ base.name }} <span class="text-secondary fw-normal">(atual: v{{ base.version }})</span>{% else %}Novo modelo de termo{% endif %}</h1>
+  </div>
+</div>
+<div class="row g-3">
+  <div class="col-12 col-xxl-8">
+    <form method="post" novalidate class="card"><div class="card-body">
+      {% csrf_token %}
+      {% if form.non_field_errors %}<div class="alert alert-danger">{% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}</div>{% endif %}
+      <div class="row g-3">
+        <div class="col-12 col-md-6"><label class="form-label" for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>{{ form.name|add_class:"form-control" }}{% for e in form.name.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+        <div class="col-12 col-md-6"><label class="form-label" for="{{ form.item_kind.id_for_label }}">{{ form.item_kind.label }}</label>{{ form.item_kind|add_class:"form-select" }}</div>
+        <div class="col-12"><span class="form-label d-block">{{ form.operation_types.label }}</span>
+          <div class="d-flex flex-wrap gap-3">{% for cb in form.operation_types %}<div class="form-check">{{ cb.tag }}<label class="form-check-label" for="{{ cb.id_for_label }}">{{ cb.choice_label }}</label></div>{% endfor %}</div>
+          {% for e in form.operation_types.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+        <div class="col-12"><label class="form-label" for="{{ form.source.id_for_label }}">{{ form.source.label }}</label>{{ form.source|add_class:"form-control" }}<div class="form-text">{{ form.source.help_text }}</div>{% for e in form.source.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+        <div class="col-12"><label class="form-label" for="{{ form.body.id_for_label }}">{{ form.body.label }}</label>{{ form.body|add_class:"form-control" }}{% for e in form.body.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+        <div class="col-12"><label class="form-label" for="{{ form.css.id_for_label }}">{{ form.css.label }}</label>{{ form.css|add_class:"form-control" }}</div>
+      </div>
+      <div class="d-flex gap-2 mt-3">
+        <button class="btn btn-primary" type="submit">Salvar {% if base %}como versão {{ base.version|add:1 }}{% else %}modelo{% endif %}</button>
+        <a class="btn btn-outline-secondary" href="{% url 'documents:template_list' %}">Cancelar</a>
+      </div>
+    </div></form>
+  </div>
+  <div class="col-12 col-xxl-4">
+    <div class="card"><div class="card-header bg-white fw-semibold">Variáveis disponíveis</div>
+      <ul class="list-group list-group-flush small">
+        {% for name, help in variables %}<li class="list-group-item"><code>{% if "{%" in name %}{{ name }}{% else %}{% templatetag openvariable %} {{ name }} {% templatetag closevariable %}{% endif %}</code>{% if help %}<div class="text-secondary">{{ help }}</div>{% endif %}</li>{% endfor %}
+      </ul>
+      <div class="card-body small text-secondary">Filtros úteis: <code>|upper</code>, <code>|capfirst</code>, <code>|default:"—"</code>. Página A4; margens com <code>@page { margin: … }</code> no CSS. O número do termo é impresso automaticamente no rodapé.</div>
+    </div>
+  </div>
+</div>
+{% endblock %}

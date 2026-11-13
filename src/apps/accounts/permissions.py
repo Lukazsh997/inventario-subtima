@@ -26,6 +26,7 @@ class Capability(StrEnum):
     STOCK_ADJUST = "stock.adjust"  # ajuste de estoque de consumíveis
     EQUIPMENT_WRITE_OFF = "equipment.write_off"  # baixa definitiva de equipamento
     OPERATION_REVERSE = "operation.reverse"  # estorno de operação
+    TEMPLATES_MANAGE = "templates.manage"  # modelos de termo e imagens dos documentos
 
 
 ROLE_CAPABILITIES: dict[str, frozenset[Capability]] = {

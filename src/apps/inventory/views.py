@@ -8,6 +8,7 @@ from django.views.decorators.http import require_GET, require_http_methods, requ
 from apps.accounts.permissions import Capability, has_capability, require_capability
 from apps.catalog.models import Consumable, Equipment
 from apps.core.listing import apply_search, paginate
+from apps.documents import services as documents
 from apps.organization.models import Location, Recipient, Sector
 
 from . import services
@@ -45,6 +46,18 @@ def _rules_for_js() -> dict:
         for op, rule in services.EQUIPMENT_RULES.items()
     }
     return rules
+
+
+def _after_operation(request, operation, *, generate: bool):
+    """Depois de registrar: emite o termo automaticamente (fluxo do requisito 8.3) e abre a operação."""
+    messages.success(request, f"{operation.get_type_display()} registrada: {operation.number}.")
+    if generate:
+        document, problem = documents.try_issue(actor=request.user, operation=operation)
+        if document:
+            messages.success(request, f"Termo {document.number} gerado e pronto para impressão.")
+        elif problem:
+            messages.warning(request, problem)
+    return redirect("inventory:operation_detail", pk=operation.pk)
 
 
 @require_GET
@@ -105,6 +118,8 @@ def operation_detail(request, pk: int):
             "movements": movements,
             "accessories": operation.accessories.all(),
             "reversal": reversal,
+            "documents": operation.documents.defer("pdf").select_related("template", "issued_by"),
+            "has_template": documents.template_for(operation) is not None,
         },
     )
 
@@ -144,8 +159,7 @@ def equipment_operation(request):
             except ValidationError as error:
                 _form_errors(form, error)
             else:
-                messages.success(request, f"{operation.get_type_display()} registrada: {operation.number}.")
-                return redirect("inventory:operation_detail", pk=operation.pk)
+                return _after_operation(request, operation, generate=form.cleaned_data.get("generate_document"))
 
     if request.method == "POST":
         preselected = form.selected_equipment()
@@ -204,8 +218,7 @@ def consumable_operation(request):
             except ValidationError as error:
                 _form_errors(form, error)
             else:
-                messages.success(request, f"{operation.get_type_display()} registrada: {operation.number}.")
-                return redirect("inventory:operation_detail", pk=operation.pk)
+                return _after_operation(request, operation, generate=form.cleaned_data.get("generate_document"))
 
     consumables = [
         {

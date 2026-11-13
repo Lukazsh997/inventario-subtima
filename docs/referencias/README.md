@@ -33,7 +33,9 @@ Conclusões aplicadas no desenho (seção 7 da proposta):
 | `termo-de-transferencia.pdf` | Word 2024 | Tabela "Descrição – Estado de Conservação \| Marca/Modelo \| Patrimônio / Série", origem/setor/destino, duas assinaturas. A coluna Patrimônio/Série usa o nº de série no caso de itens locados. |
 | `termo-de-recebimento-de-resmas.pdf` | Word + Acrobat | Frase "Eu ___, da Secretaria Municipal de … declaro ter recebido …"; rodapé com logotipo DC e endereço. |
 
-**Ainda falta:** o modelo do **Termo de Responsabilidade** usado na saída de equipamento, além dos logotipos em boa resolução. O DOCX original seria útil, mas não é indispensável.
+**Implementados (v0.4.0):** os dois modelos acima, reproduzidos em HTML/CSS (comparação lado a lado aprovada no desenvolvimento). Fontes equivalentes: Arial → Liberation Sans, Times New Roman → Liberation Serif, Calibri → Carlito.
+
+**Ainda falta:** o modelo do **Termo de Responsabilidade** usado na saída de equipamento e logotipos em boa resolução (os atuais vieram dos próprios PDFs, em 177×217 e 433×122 pixels). O DOCX original seria útil, mas não é indispensável.
 
 ## Toners e suprimentos por impressora
 
