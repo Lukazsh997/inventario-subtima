@@ -6,7 +6,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# Cliente PostgreSQL 17 (pg_dump/pg_restore na mesma versão do banco) e tini como init.
+# Cliente PostgreSQL 17 (pg_dump/pg_restore na mesma versão do banco), tini como init e
+# bibliotecas/fontes do WeasyPrint (PDF). Liberation, Carlito e Caladea têm as mesmas
+# métricas de Arial/Times, Calibri e Cambria, usadas nos modelos do órgão.
 RUN apt-get update \
  && apt-get install -y --no-install-recommends ca-certificates curl gnupg tini \
  && install -d /usr/share/postgresql-common/pgdg \
@@ -16,6 +18,8 @@ RUN apt-get update \
       > /etc/apt/sources.list.d/pgdg.list \
  && apt-get update \
  && apt-get install -y --no-install-recommends postgresql-client-17 \
+      libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz-subset0 \
+      fonts-liberation2 fonts-dejavu-core fonts-crosextra-carlito fonts-crosextra-caladea \
  && apt-get purge -y gnupg curl && apt-get autoremove -y \
  && rm -rf /var/lib/apt/lists/*
 
@@ -35,7 +39,7 @@ RUN useradd --uid 1000 --create-home --shell /usr/sbin/nologin app \
 WORKDIR /app/src
 RUN DEBUG=false SECRET_KEY=build-only LOG_TO_FILE=false python manage.py collectstatic --noinput
 
-ARG APP_VERSION=0.2.0
+ARG APP_VERSION=0.3.0
 ENV APP_VERSION=${APP_VERSION} \
     DATA_DIR=/data \
     BACKUP_DIR=/backups

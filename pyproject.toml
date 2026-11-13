@@ -1,6 +1,6 @@
 [project]
 name = "patrimonio-ti"
-version = "0.2.0"
+version = "0.3.0"
 description = "Sistema de gerenciamento de patrimônio e estoque de TI"
 requires-python = ">=3.12"
 

@@ -67,3 +67,10 @@ Nenhuma operação é apagada ou editada. Para corrigir, o **administrador** abr
 - A **entrada** de um equipamento não é estornada. Dado cadastral errado se corrige em **Corrigir cadastro**; equipamento cadastrado por engano recebe **baixa**.
 - Um estorno nunca deixa saldo negativo.
 - Dados cadastrais (nome, modelo, série, patrimônio…) podem ser corrigidos a qualquer momento em **Corrigir cadastro**, e cada alteração fica na auditoria. Situação, setor e responsável mudam somente por movimentação.
+
+## Painel, alertas e relatórios
+
+- **Painel:** é a tela inicial. Mostra os indicadores e os gráficos do período escolhido (padrão: últimos 12 meses). Os filtros de categoria e setor valem para os indicadores e os gráficos em que fazem sentido. Cada indicador leva à lista correspondente, e cada gráfico tem **Ver tabela** com os números exatos.
+- **Materiais críticos:** um material entra em alerta quando o saldo **atinge ou fica abaixo do estoque mínimo**. Só materiais com mínimo maior que zero geram alerta, então configure o mínimo em *Materiais de consumo → Editar*. O alerta registra quando a condição foi identificada e fecha sozinho quando o saldo volta acima do mínimo. O número ao lado do menu mostra quantos estão abertos. A sugestão de compra cobre a volta ao mínimo mais 3 meses do consumo médio recente.
+- **"Materiais sem estoque"** no painel conta todos os materiais ativos com saldo 0, inclusive os que nunca tiveram entrada.
+- **Relatórios:** escolha o relatório, aplique os filtros e use **PDF** (A4, para imprimir ou arquivar) ou **CSV** (abre direto no Excel ou no LibreOffice). O relatório *Histórico individual de equipamento* aceita a leitura da etiqueta no campo de busca.

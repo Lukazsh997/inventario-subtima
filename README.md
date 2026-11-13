@@ -4,7 +4,7 @@ Sistema web de gestão de patrimônio e estoque de TI: equipamentos identificado
 
 Desenvolvido para a Subsecretaria de Tecnologia da Informação e Modernização Administrativa (SUBTIMA) da Prefeitura Municipal de Duque de Caxias. Roda inteiramente na rede interna, em Docker, apenas com software livre.
 
-## Situação atual: versão 0.2.0 (Fase 3: estoque)
+## Situação atual: versão 0.3.0 (Fase 4: painel, alertas e relatórios)
 
 | Módulo | Situação |
 |---|---|
@@ -17,7 +17,9 @@ Desenvolvido para a Subsecretaria de Tecnologia da Informação e Modernização
 | Leitura das etiquetas existentes (câmera e leitor USB), busca global | pronto |
 | Entradas, saídas, transferências, devoluções, empréstimos, manutenção, ajuste, baixa, estorno | pronto |
 | Histórico imutável, saldo nunca negativo, histórico de localização/responsabilidade | pronto |
-| Dashboard com gráficos, alertas de estoque mínimo, relatórios PDF/CSV | Fase 4 |
+| Painel com indicadores, 6 gráficos e filtros por período, categoria e setor | pronto |
+| Alertas de estoque mínimo (registro, sem duplicatas, encerramento automático) e página de materiais críticos | pronto |
+| 10 relatórios com filtros e exportação em PDF (A4) e CSV | pronto |
 | Termos em PDF a partir dos modelos institucionais | Fase 5 |
 
 Guia de uso para a equipe: [docs/operacao.md](docs/operacao.md).
@@ -60,7 +62,7 @@ Material recebido do órgão (etiquetas, modelos de termo, toners): [docs/refere
 | `CSRF_TRUSTED_ORIGINS` | com HTTPS | — | Ex.: `https://patrimonio.intranet.local` |
 | `USE_HTTPS` | | `false` | `true` atrás de proxy HTTPS (cookies seguros) |
 | `FORWARDED_ALLOW_IPS` | com proxy | `127.0.0.1` | IP do proxy reverso confiável |
-| `APP_VERSION` / `APP_PORT` | | `0.2.0` / `8000` | Tag da imagem e porta publicada |
+| `APP_VERSION` / `APP_PORT` | | `0.3.0` / `8000` | Tag da imagem e porta publicada |
 | `ORG_NAME` / `ORG_UNIT_NAME` | | genéricos | Nome do órgão e da unidade (tela e documentos) |
 | `TIME_ZONE` | | `America/Sao_Paulo` | Fuso horário |
 | `SESSION_TIMEOUT_MINUTES` | | `480` | Sessão expira após inatividade |
@@ -73,7 +75,7 @@ Material recebido do órgão (etiquetas, modelos de termo, toners): [docs/refere
 
 ## Arquitetura
 
-Monólito modular em Django 5.2 LTS com PostgreSQL 17, interface renderizada no servidor (Bootstrap 5, HTMX, Alpine.js, todos empacotados localmente, sem CDN).
+Monólito modular em Django 5.2 LTS com PostgreSQL 17, interface renderizada no servidor (Bootstrap 5, HTMX, Alpine.js, Chart.js, todos empacotados localmente, sem CDN) e PDFs gerados com WeasyPrint.
 
 ```
 src/
@@ -84,6 +86,9 @@ src/
 │   ├── organization/  setores, locais, servidores recebedores
 │   ├── catalog/       categorias, equipamentos, materiais, leitura de etiquetas
 │   ├── inventory/     operações, movimentações, saldos, atribuições, estorno
+│   ├── alerts/        alertas de estoque mínimo (reagem a eventos de estoque)
+│   ├── dashboard/     painel: indicadores e séries dos gráficos
+│   ├── reports/       relatórios (tela, CSV e PDF a partir da mesma definição)
 │   └── audit/         auditoria somente-inserção
 ├── templates/         layout base e componentes reutilizáveis
 └── static/            CSS/JS do sistema e bibliotecas locais

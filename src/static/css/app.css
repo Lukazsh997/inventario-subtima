@@ -71,3 +71,5 @@
 .timeline li.reversed::before { background: #adb5bd; }
 
 [x-cloak] { display: none !important; }
+
+.chart-box { position: relative; width: 100%; }

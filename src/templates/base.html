@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Início{% endblock %} · Patrimônio TI</title>
+  <link rel="icon" href="{% static 'img/favicon.svg' %}" type="image/svg+xml">
   <link rel="stylesheet" href="{% static 'vendor/bootstrap/bootstrap.min.css' %}">
   <link rel="stylesheet" href="{% static 'vendor/bootstrap-icons/bootstrap-icons.min.css' %}">
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
@@ -30,7 +31,7 @@
         <div class="small opacity-75">{{ ORG_UNIT_NAME }}</div>
       </div>
       <ul class="nav flex-column px-2 flex-grow-1">
-        <li class="nav-item"><a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{% url 'core:home' %}"><i class="bi bi-house"></i> Início</a></li>
+        <li class="nav-item"><a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{% url 'core:home' %}"><i class="bi bi-speedometer2"></i> Painel</a></li>
         {% if "inventory.view" in caps %}
         <li class="app-nav-section">Estoque</li>
         <li class="nav-item"><a class="nav-link {% active_if '/estoque/ler' %}" href="{% url 'catalog:scan' %}"><i class="bi bi-qr-code-scan"></i> Ler etiqueta</a></li>
@@ -41,6 +42,8 @@
         <li class="nav-item"><a class="nav-link {% active_if '/estoque/equipamentos' %}" href="{% url 'catalog:equipment_list' %}"><i class="bi bi-pc-display"></i> Equipamentos</a></li>
         <li class="nav-item"><a class="nav-link {% active_if '/estoque/materiais' %}" href="{% url 'catalog:consumable_list' %}"><i class="bi bi-box-seam"></i> Materiais de consumo</a></li>
         <li class="nav-item"><a class="nav-link {% if request.path == '/estoque/operacoes/' or '/estoque/operacoes/' in request.path and '/nova/' not in request.path %}active{% endif %}" href="{% url 'inventory:operation_list' %}"><i class="bi bi-arrow-left-right"></i> Movimentações</a></li>
+        <li class="nav-item"><a class="nav-link {% active_if '/alertas' %}" href="{% url 'alerts:critical_list' %}"><i class="bi bi-bell"></i> Materiais críticos{% if open_alerts %} <span class="badge rounded-pill text-bg-warning ms-auto" aria-label="{{ open_alerts }} alertas abertos">{{ open_alerts }}</span>{% endif %}</a></li>
+        <li class="nav-item"><a class="nav-link {% active_if '/relatorios' %}" href="{% url 'reports:index' %}"><i class="bi bi-file-earmark-bar-graph"></i> Relatórios</a></li>
         <li class="nav-item"><a class="nav-link {% active_if '/estoque/categorias' %}" href="{% url 'catalog:category_list' %}"><i class="bi bi-tags"></i> Categorias</a></li>
         {% endif %}
         {% if "org.view" in caps %}

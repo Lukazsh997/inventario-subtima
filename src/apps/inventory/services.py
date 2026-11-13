@@ -19,6 +19,7 @@ from apps.audit import services as audit
 from apps.audit.models import AuditAction
 from apps.catalog.models import Consumable, Equipment, EquipmentStatus
 from apps.catalog.services import apply_equipment_fields
+from apps.core import events
 from apps.core.numbering import next_number
 from apps.organization.models import Location, Recipient, Sector
 
@@ -373,6 +374,7 @@ def move_consumables(
             operation=operation, consumable_id=consumable_id, quantity=delta, balance_after=balance.quantity
         )
     _audit_operation(actor, operation)
+    events.publish(events.CONSUMABLES_CHANGED, consumable_ids=sorted(merged))
     return operation
 
 
@@ -482,4 +484,8 @@ def reverse_operation(*, actor, operation: StockOperation, justification: str) -
         )
 
     _audit_operation(actor, reversal, action=AuditAction.REVERSAL)
+    if consumable_movements:
+        events.publish(
+            events.CONSUMABLES_CHANGED, consumable_ids=sorted({m.consumable_id for m in consumable_movements})
+        )
     return reversal

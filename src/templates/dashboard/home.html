@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Painel{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Painel</h1>
+    <div class="text-secondary small">{{ ORG_NAME }} · {{ ORG_UNIT_NAME }}</div>
+  </div>
+  {% if "inventory.operate" in caps %}
+  <div class="d-flex flex-wrap gap-2">
+    <a class="btn btn-primary" href="{% url 'catalog:equipment_create' %}"><i class="bi bi-box-arrow-in-down"></i> Entrada de equipamento</a>
+    <a class="btn btn-outline-primary" href="{% url 'inventory:equipment_operation' %}"><i class="bi bi-box-arrow-up-right"></i> Movimentar equipamento</a>
+    <a class="btn btn-outline-primary" href="{% url 'inventory:consumable_operation' %}"><i class="bi bi-cart-dash"></i> Retirada de material</a>
+  </div>
+  {% endif %}
+</div>
+
+{% if kpi %}
+{% if kpi.low_stock or kpi.overdue_loans %}
+<div class="alert alert-warning d-flex flex-wrap gap-3 align-items-center" role="status">
+  <i class="bi bi-bell-fill"></i>
+  {% if kpi.low_stock %}<a class="alert-link" href="{% url 'alerts:critical_list' %}">{{ kpi.low_stock }} material{{ kpi.low_stock|pluralize:"is" }} no estoque mínimo ou abaixo</a>{% endif %}
+  {% if kpi.overdue_loans %}<a class="alert-link" href="{% url 'reports:show' 'equipamentos-emprestados' %}?atrasados=1">{{ kpi.overdue_loans }} empréstimo{{ kpi.overdue_loans|pluralize }} com devolução atrasada</a>{% endif %}
+</div>
+{% endif %}
+
+<form class="row g-2 mb-3 align-items-end" method="get" aria-label="Filtros do painel">
+  <div class="col-6 col-md-3 col-xl-2"><label class="form-label small mb-1" for="f-de">De</label><input class="form-control" id="f-de" type="date" name="de" value="{{ filters.start|date:'Y-m-d' }}"></div>
+  <div class="col-6 col-md-3 col-xl-2"><label class="form-label small mb-1" for="f-ate">Até</label><input class="form-control" id="f-ate" type="date" name="ate" value="{{ filters.end|date:'Y-m-d' }}"></div>
+  <div class="col-12 col-md-6 col-xl-3"><label class="form-label small mb-1" for="f-cat">Categoria</label>
+    <select class="form-select" id="f-cat" name="categoria"><option value="">Todas</option>
+      {% regroup categories by get_kind_display as groups %}
+      {% for g in groups %}<optgroup label="{{ g.grouper }}">{% for c in g.list %}<option value="{{ c.pk }}" {% if filters.category.pk == c.pk %}selected{% endif %}>{{ c.name }}</option>{% endfor %}</optgroup>{% endfor %}
+    </select></div>
+  <div class="col-12 col-md-6 col-xl-3"><label class="form-label small mb-1" for="f-setor">Setor</label>
+    <select class="form-select" id="f-setor" name="setor"><option value="">Todos</option>
+      {% for s in sectors %}<option value="{{ s.pk }}" {% if filters.sector.pk == s.pk %}selected{% endif %}>{{ s }}</option>{% endfor %}
+    </select></div>
+  <div class="col-12 col-md-6 col-xl-2 d-flex gap-2"><button class="btn btn-outline-primary flex-grow-1" type="submit">Aplicar</button><a class="btn btn-outline-secondary" href="{% url 'core:home' %}">Limpar</a></div>
+</form>
+{% for w in filter_warnings %}<div class="alert alert-info py-2 small">{{ w }}</div>{% endfor %}
+
+<div class="row g-3 mb-3">
+  {% url 'catalog:equipment_list' as eq_url %}
+  <div class="col-6 col-md-3"><a class="card card-stat h-100 text-decoration-none text-reset" href="{{ eq_url }}"><div class="card-body"><div class="value">{{ kpi.equipment_total }}</div><div class="label">Equipamentos cadastrados</div></div></a></div>
+  <div class="col-6 col-md-3"><a class="card card-stat h-100 text-decoration-none text-reset" href="{{ eq_url }}?situacao=disponivel"><div class="card-body"><div class="value">{{ kpi.available }}</div><div class="label">Disponíveis no estoque</div></div></a></div>
+  <div class="col-6 col-md-3"><a class="card card-stat h-100 text-decoration-none text-reset" href="{{ eq_url }}?situacao=emprestado"><div class="card-body"><div class="value">{{ kpi.on_loan }}</div><div class="label">Emprestados{% if kpi.overdue_loans %} · <span class="text-danger">{{ kpi.overdue_loans }} atrasado{{ kpi.overdue_loans|pluralize }}</span>{% endif %}</div></div></a></div>
+  <div class="col-6 col-md-3"><a class="card card-stat h-100 text-decoration-none text-reset" href="{{ eq_url }}?situacao=manutencao"><div class="card-body"><div class="value">{{ kpi.maintenance }}</div><div class="label">Em manutenção</div></div></a></div>
+  <div class="col-6 col-md-3"><a class="card card-stat h-100 text-decoration-none text-reset" href="{% url 'catalog:consumable_list' %}"><div class="card-body"><div class="value">{{ kpi.stock_units }}</div><div class="label">Unidades de material em estoque ({{ kpi.stock_items }} ite{{ kpi.stock_items|pluralize:"m,ns" }})</div></div></a></div>
+  <div class="col-6 col-md-3"><a class="card card-stat h-100 text-decoration-none text-reset" href="{% url 'inventory:operation_list' %}?de={% now 'Y-m' %}-01"><div class="card-body"><div class="value">{{ kpi.operations_month }}</div><div class="label">Movimentações no mês</div></div></a></div>
+  <div class="col-6 col-md-3"><a class="card card-stat h-100 text-decoration-none text-reset {% if kpi.low_stock %}border-warning{% endif %}" href="{% url 'alerts:critical_list' %}"><div class="card-body"><div class="value">{% if kpi.low_stock %}<i class="bi bi-exclamation-triangle text-warning-emphasis fs-5"></i> {% endif %}{{ kpi.low_stock }}</div><div class="label">Materiais com estoque baixo</div></div></a></div>
+  <div class="col-6 col-md-3"><a class="card card-stat h-100 text-decoration-none text-reset {% if kpi.empty_stock %}border-danger{% endif %}" href="{% url 'catalog:consumable_list' %}?situacao=zerado"><div class="card-body"><div class="value">{% if kpi.empty_stock %}<i class="bi bi-x-octagon text-danger fs-5"></i> {% endif %}{{ kpi.empty_stock }}</div><div class="label">Materiais sem estoque</div></div></a></div>
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-12 col-xl-6">{% include "dashboard/_chart_card.html" with id="chart-entries-exits" title="Entradas e saídas" subtitle="Operações por mês, equipamentos e materiais" kind="pair" label="Operações" data=charts.entries_exits rows=tables.entries_exits %}</div>
+  <div class="col-12 col-xl-6">{% include "dashboard/_chart_card.html" with id="chart-consumption" title="Consumo mensal de materiais" subtitle="Unidades retiradas menos devolvidas" kind="columns" label="Unidades" data=charts.consumption rows=tables.consumption %}</div>
+  <div class="col-12 col-xl-6">{% include "dashboard/_chart_card.html" with id="chart-top" title="Materiais mais retirados" subtitle="Unidades no período" kind="rows" label="Unidades" data=charts.top_withdrawn rows=tables.top_withdrawn height="320" %}</div>
+  <div class="col-12 col-xl-6">{% include "dashboard/_chart_card.html" with id="chart-sector" title="Equipamentos distribuídos por setor" subtitle="Em uso ou emprestados, hoje" kind="rows" label="Equipamentos" data=charts.by_sector rows=tables.by_sector height="320" %}</div>
+  <div class="col-12 col-xl-6">{% include "dashboard/_chart_card.html" with id="chart-evolution" title="Evolução do estoque de materiais" subtitle="Unidades em estoque ao fim de cada mês" kind="line" label="Unidades" data=charts.stock_evolution rows=tables.stock_evolution %}</div>
+  <div class="col-12 col-xl-6">{% include "dashboard/_chart_card.html" with id="chart-category" title="Equipamentos por categoria" subtitle="Exceto baixados, hoje" kind="rows" label="Equipamentos" data=charts.by_category rows=tables.by_category %}</div>
+</div>
+
+<div class="row g-3">
+  <div class="col-12 col-xl-{% if recent_audit %}7{% else %}12{% endif %}">
+    <div class="card h-100">
+      <div class="card-header bg-white fw-semibold d-flex justify-content-between">Atividades recentes <a class="small" href="{% url 'inventory:operation_list' %}">ver todas</a></div>
+      <div class="table-responsive">
+        <table class="table table-sm mb-0">
+          <thead><tr><th>Quando</th><th>Item</th><th>Operação</th><th class="d-none d-md-table-cell">Setor</th><th class="d-none d-lg-table-cell">Por</th></tr></thead>
+          <tbody>
+          {% for m in recent %}
+          <tr>
+            <td class="text-nowrap small">{{ m.operation.performed_at|date:"d/m H:i" }}</td>
+            <td class="small">{% if m.equipment %}<a href="{% url 'catalog:equipment_detail' m.equipment.pk %}">{{ m.equipment.name }}</a>{% else %}<a href="{% url 'catalog:consumable_detail' m.consumable.pk %}">{{ m.consumable.name }}</a> ({{ m.quantity|stringformat:"+d" }}){% endif %}</td>
+            <td class="small"><a href="{% url 'inventory:operation_detail' m.operation.pk %}">{{ m.operation.get_type_display }}</a></td>
+            <td class="d-none d-md-table-cell small">{% firstof m.operation.destination_sector.acronym m.operation.destination_sector.name m.operation.origin_sector.acronym m.operation.origin_sector.name "—" %}{% if m.operation.recipient %} · {{ m.operation.recipient.full_name }}{% endif %}</td>
+            <td class="d-none d-lg-table-cell small">{{ m.operation.performed_by.full_name }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="5" class="text-secondary text-center py-3">Nenhuma movimentação.</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  {% if recent_audit %}
+  <div class="col-12 col-xl-5">
+    <div class="card h-100">
+      <div class="card-header bg-white fw-semibold d-flex justify-content-between">Auditoria recente <a class="small" href="{% url 'audit:list' %}">ver tudo</a></div>
+      <ul class="list-group list-group-flush">
+        {% for e in recent_audit %}
+        <li class="list-group-item small d-flex justify-content-between gap-3">
+          <span><strong>{{ e.username|default:"—" }}</strong> · {{ e.get_action_display }} · {{ e.summary }}</span>
+          <span class="text-secondary text-nowrap">{{ e.created_at|date:"d/m H:i" }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% else %}
+<div class="row g-3">
+  <div class="col-6 col-md-3"><div class="card card-stat"><div class="card-body"><div class="value">{{ sector_count }}</div><div class="label">Setores ativos</div></div></div></div>
+  <div class="col-6 col-md-3"><div class="card card-stat"><div class="card-body"><div class="value">{{ recipient_count }}</div><div class="label">Servidores cadastrados</div></div></div></div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if kpi %}
+<script src="{% static 'vendor/chartjs/chart.umd.js' %}"></script>
+<script src="{% static 'js/charts.js' %}"></script>
+{% endif %}
+{% endblock %}

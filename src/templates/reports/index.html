@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Relatórios{% endblock %}
+{% block content %}
+<div class="page-header"><h1>Relatórios</h1></div>
+<div class="row g-3">
+  {% for r in reports %}
+  <div class="col-12 col-md-6 col-xl-4">
+    <a class="card h-100 text-decoration-none text-reset report-card" href="{% url 'reports:show' r.slug %}">
+      <div class="card-body">
+        <h2 class="h6 mb-1">{{ r.title }}</h2>
+        <p class="small text-secondary mb-0">{{ r.description }}</p>
+      </div>
+    </a>
+  </div>
+  {% endfor %}
+</div>
+<p class="small text-secondary mt-3">Todos os relatórios podem ser exportados em PDF (A4) e CSV. O relatório de termos emitidos entra com o módulo de documentos (Fase 5).</p>
+{% endblock %}
